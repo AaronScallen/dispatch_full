@@ -9,10 +9,14 @@ const bodyParser = require("body-parser");
 // --- CONFIGURATION ---
 const app = express();
 const server = http.createServer(app);
-const PORT = process.env.PORT || 4000;
+const PORT = process.env.PORT || 5000;
 
 // --- MIDDLEWARE ---
-app.use(cors()); // Allow requests from the Frontend
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL || "*", // Allow all for testing, specific URL for prod
+  })
+); // Allow requests from the Frontend
 app.use(bodyParser.json()); // Parse JSON data from forms
 
 // --- DATABASE CONNECTION ---
@@ -22,6 +26,7 @@ const pool = new Pool({
   database: process.env.DB_NAME || "dispatch_db",
   password: process.env.DB_PASSWORD || "password",
   port: process.env.DB_PORT || 5432,
+  ssl: process.env.DB_HOST ? { rejectUnauthorized: false } : false,
 });
 
 // [DEBUG] Test Database Connection Immediately
