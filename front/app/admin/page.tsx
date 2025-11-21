@@ -17,6 +17,7 @@ export default function Admin() {
   const [isConnected, setIsConnected] = useState(true);
   const [activeTab, setActiveTab] = useState("absences");
   const [statusMsg, setStatusMsg] = useState("");
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // --- DATA STORE ---
   const [absences, setAbsences] = useState<Absence[]>([]);
@@ -310,8 +311,32 @@ export default function Admin() {
 
       {/* HEADER */}
       <div className="bg-slate-900 text-white p-4 sticky top-0 z-50 shadow-md flex justify-between items-center">
-        <h1 className="font-bold text-lg">Dispatch Admin</h1>
-        <div className="text-xs uppercase tracking-wider text-slate-400 bg-slate-800 px-2 py-1 rounded">
+        <div className="flex items-center gap-3">
+          {/* Hamburger Button - Mobile Only */}
+          <button
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className="md:hidden flex flex-col gap-1.5 w-6 h-6 justify-center"
+            aria-label="Toggle menu"
+          >
+            <span
+              className={`block h-0.5 w-6 bg-white transition-transform ${
+                isMobileMenuOpen ? "rotate-45 translate-y-2" : ""
+              }`}
+            ></span>
+            <span
+              className={`block h-0.5 w-6 bg-white transition-opacity ${
+                isMobileMenuOpen ? "opacity-0" : ""
+              }`}
+            ></span>
+            <span
+              className={`block h-0.5 w-6 bg-white transition-transform ${
+                isMobileMenuOpen ? "-rotate-45 -translate-y-2" : ""
+              }`}
+            ></span>
+          </button>
+          <h1 className="font-bold text-lg md:text-xl">Dispatch Admin</h1>
+        </div>
+        <div className="text-xs uppercase tracking-wider text-slate-400 bg-slate-800 px-2 py-1 rounded hidden sm:block">
           {activeTab} Manager
         </div>
       </div>
@@ -325,8 +350,42 @@ export default function Admin() {
         </div>
       )}
 
-      {/* NAVIGATION TABS */}
-      <div className="bg-white shadow overflow-x-auto flex sticky top-14 z-40">
+      {/* NAVIGATION - Mobile Menu (Dropdown) */}
+      {isMobileMenuOpen && (
+        <div
+          className="md:hidden fixed inset-0 top-14 bg-black bg-opacity-50 z-40"
+          onClick={() => setIsMobileMenuOpen(false)}
+        >
+          <div
+            className="bg-white shadow-lg"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {["absences", "equipment", "oncall", "notices", "alerts"].map(
+              (tab) => (
+                <button
+                  key={tab}
+                  onClick={() => {
+                    setActiveTab(tab);
+                    resetForms();
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className={`w-full py-4 px-6 text-left text-sm font-bold uppercase tracking-wider border-b border-gray-100
+                  ${
+                    activeTab === tab
+                      ? "text-blue-600 bg-blue-50 border-l-4 border-l-blue-600"
+                      : "text-gray-700 hover:bg-gray-50"
+                  }`}
+                >
+                  {tab}
+                </button>
+              )
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* NAVIGATION TABS - Desktop Only */}
+      <div className="bg-white shadow overflow-x-auto hidden md:flex sticky top-14 z-40">
         {["absences", "equipment", "oncall", "notices", "alerts"].map((tab) => (
           <button
             key={tab}
@@ -346,18 +405,18 @@ export default function Admin() {
         ))}
       </div>
 
-      <div className="max-w-3xl mx-auto p-4">
+      <div className="max-w-3xl mx-auto p-3 md:p-4">
         {/* ================= ABSENCES TAB ================= */}
         {activeTab === "absences" && (
           <>
             <form
               onSubmit={submitAbsence}
-              className="bg-white p-4 rounded shadow mb-8 space-y-3 border border-gray-200"
+              className="bg-white p-3 md:p-4 rounded shadow mb-6 md:mb-8 space-y-3 border border-gray-200"
             >
-              <h2 className="font-bold text-gray-700 border-b pb-2">
+              <h2 className="font-bold text-gray-700 border-b pb-2 text-sm md:text-base">
                 {editId ? "Edit Absence" : "Log New Absence"}
               </h2>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <input
                   className="input-field"
                   placeholder="Badge #"
@@ -373,7 +432,7 @@ export default function Admin() {
                   required
                 />
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <input
                   className="input-field"
                   placeholder="Covering Badge"
@@ -395,11 +454,11 @@ export default function Admin() {
                 onChange={(e) => setAbsNote(e.target.value)}
                 rows={3}
               />
-              <div className="flex gap-2 pt-2">
+              <div className="flex flex-col sm:flex-row gap-2 pt-2">
                 <button
                   type="submit"
                   disabled={!isConnected}
-                  className="btn-primary bg-blue-600 hover:bg-blue-700"
+                  className="btn-primary bg-blue-600 hover:bg-blue-700 flex-1"
                 >
                   {editId ? "Update Record" : "Submit Record"}
                 </button>
@@ -407,7 +466,7 @@ export default function Admin() {
                   <button
                     type="button"
                     onClick={resetForms}
-                    className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+                    className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 w-full sm:w-auto"
                   >
                     Cancel
                   </button>
@@ -419,12 +478,12 @@ export default function Admin() {
               {absences.map((item) => (
                 <div
                   key={item.id}
-                  className="bg-white p-4 rounded shadow flex justify-between items-center border-l-4 border-blue-400"
+                  className="bg-white p-3 md:p-4 rounded shadow flex flex-col sm:flex-row sm:justify-between sm:items-center border-l-4 border-blue-400 gap-3"
                 >
-                  <div>
-                    <p className="font-bold text-gray-800">
+                  <div className="flex-1">
+                    <p className="font-bold text-gray-800 text-sm md:text-base">
                       Badge #{item.badge_number}{" "}
-                      <span className="text-gray-400 text-sm font-normal">
+                      <span className="text-gray-400 text-xs md:text-sm font-normal block sm:inline">
                         | {item.location_name}
                       </span>
                     </p>
@@ -437,16 +496,16 @@ export default function Admin() {
                       {item.notes}
                     </p>
                   </div>
-                  <div className="flex gap-3">
+                  <div className="flex gap-3 sm:flex-col lg:flex-row">
                     <button
                       onClick={() => editAbsence(item)}
-                      className="text-blue-600 font-bold text-sm hover:underline"
+                      className="text-blue-600 font-bold text-sm hover:underline flex-1 sm:flex-none"
                     >
                       EDIT
                     </button>
                     <button
                       onClick={() => deleteItem("absences", item.id)}
-                      className="text-red-600 font-bold text-sm hover:underline"
+                      className="text-red-600 font-bold text-sm hover:underline flex-1 sm:flex-none"
                     >
                       DEL
                     </button>
@@ -462,12 +521,12 @@ export default function Admin() {
           <>
             <form
               onSubmit={submitEquipment}
-              className="bg-white p-4 rounded shadow mb-8 space-y-3 border border-gray-200"
+              className="bg-white p-3 md:p-4 rounded shadow mb-6 md:mb-8 space-y-3 border border-gray-200"
             >
-              <h2 className="font-bold text-gray-700 border-b pb-2">
+              <h2 className="font-bold text-gray-700 border-b pb-2 text-sm md:text-base">
                 {editId ? "Edit Equipment" : "Report Downed Equipment"}
               </h2>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <input
                   className="input-field"
                   placeholder="Type (Radio, Car...)"
@@ -506,11 +565,11 @@ export default function Admin() {
                 onChange={(e) => setEqNotes(e.target.value)}
                 rows={2}
               />
-              <div className="flex gap-2 pt-2">
+              <div className="flex flex-col sm:flex-row gap-2 pt-2">
                 <button
                   type="submit"
                   disabled={!isConnected}
-                  className="btn-primary bg-orange-600 hover:bg-orange-700"
+                  className="btn-primary bg-orange-600 hover:bg-orange-700 flex-1"
                 >
                   {editId ? "Update Status" : "Report Down"}
                 </button>
@@ -518,7 +577,7 @@ export default function Admin() {
                   <button
                     type="button"
                     onClick={resetForms}
-                    className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+                    className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 w-full sm:w-auto"
                   >
                     Cancel
                   </button>
@@ -530,12 +589,12 @@ export default function Admin() {
               {equipment.map((item) => (
                 <div
                   key={item.id}
-                  className="bg-white p-4 rounded shadow border-l-4 border-orange-400 flex justify-between items-center"
+                  className="bg-white p-3 md:p-4 rounded shadow border-l-4 border-orange-400 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3"
                 >
-                  <div>
-                    <div className="flex items-center gap-2 mb-1">
+                  <div className="flex-1">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-1">
                       <span
-                        className={`text-xs font-bold px-2 py-1 rounded text-white ${
+                        className={`text-xs font-bold px-2 py-1 rounded text-white w-fit ${
                           item.status === "Broken"
                             ? "bg-red-600"
                             : item.status === "Repairing"
@@ -545,23 +604,25 @@ export default function Admin() {
                       >
                         {item.status}
                       </span>
-                      <p className="font-bold text-gray-800">{item.title}</p>
+                      <p className="font-bold text-gray-800 text-sm md:text-base">
+                        {item.title}
+                      </p>
                     </div>
-                    <p className="text-sm text-gray-500 font-mono">
+                    <p className="text-xs md:text-sm text-gray-500 font-mono">
                       ID: {item.equipment_id_number}
                     </p>
                     <p className="text-sm text-gray-600 italic">{item.notes}</p>
                   </div>
-                  <div className="flex gap-3">
+                  <div className="flex gap-3 sm:flex-col lg:flex-row">
                     <button
                       onClick={() => editEquipment(item)}
-                      className="text-blue-600 font-bold text-sm hover:underline"
+                      className="text-blue-600 font-bold text-sm hover:underline flex-1 sm:flex-none"
                     >
                       EDIT
                     </button>
                     <button
                       onClick={() => deleteItem("equipment", item.id)}
-                      className="text-red-600 font-bold text-sm hover:underline"
+                      className="text-red-600 font-bold text-sm hover:underline flex-1 sm:flex-none"
                     >
                       DEL
                     </button>
@@ -577,9 +638,9 @@ export default function Admin() {
           <>
             <form
               onSubmit={submitOnCall}
-              className="bg-white p-4 rounded shadow mb-8 space-y-3 border border-gray-200"
+              className="bg-white p-3 md:p-4 rounded shadow mb-6 md:mb-8 space-y-3 border border-gray-200"
             >
-              <h2 className="font-bold text-gray-700 border-b pb-2">
+              <h2 className="font-bold text-gray-700 border-b pb-2 text-sm md:text-base">
                 {editId ? "Edit Staff" : "Add On-Call Staff"}
               </h2>
               <input
@@ -603,11 +664,11 @@ export default function Admin() {
                 onChange={(e) => setOcPhone(e.target.value)}
                 required
               />
-              <div className="flex gap-2 pt-2">
+              <div className="flex flex-col sm:flex-row gap-2 pt-2">
                 <button
                   type="submit"
                   disabled={!isConnected}
-                  className="btn-primary bg-green-600 hover:bg-green-700"
+                  className="btn-primary bg-green-600 hover:bg-green-700 flex-1"
                 >
                   {editId ? "Update Staff" : "Add Staff"}
                 </button>
@@ -615,7 +676,7 @@ export default function Admin() {
                   <button
                     type="button"
                     onClick={resetForms}
-                    className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+                    className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 w-full sm:w-auto"
                   >
                     Cancel
                   </button>
@@ -627,29 +688,29 @@ export default function Admin() {
               {onCall.map((item) => (
                 <div
                   key={item.id}
-                  className="bg-white p-4 rounded shadow flex justify-between items-center border-l-4 border-green-500"
+                  className="bg-white p-3 md:p-4 rounded shadow flex flex-col sm:flex-row sm:justify-between sm:items-center border-l-4 border-green-500 gap-3"
                 >
-                  <div>
-                    <p className="font-bold text-gray-800 text-lg">
+                  <div className="flex-1">
+                    <p className="font-bold text-gray-800 text-base md:text-lg">
                       {item.person_name}
                     </p>
-                    <p className="text-sm text-gray-500 font-semibold uppercase">
+                    <p className="text-xs md:text-sm text-gray-500 font-semibold uppercase">
                       {item.department_name}
                     </p>
-                    <p className="text-lg font-mono text-gray-700">
+                    <p className="text-base md:text-lg font-mono text-gray-700">
                       {item.phone_number}
                     </p>
                   </div>
-                  <div className="flex gap-3">
+                  <div className="flex gap-3 sm:flex-col lg:flex-row">
                     <button
                       onClick={() => editOnCall(item)}
-                      className="text-blue-600 font-bold text-sm hover:underline"
+                      className="text-blue-600 font-bold text-sm hover:underline flex-1 sm:flex-none"
                     >
                       EDIT
                     </button>
                     <button
                       onClick={() => deleteItem("oncall", item.id)}
-                      className="text-red-600 font-bold text-sm hover:underline"
+                      className="text-red-600 font-bold text-sm hover:underline flex-1 sm:flex-none"
                     >
                       DEL
                     </button>
@@ -665,9 +726,9 @@ export default function Admin() {
           <>
             <form
               onSubmit={submitNotice}
-              className="bg-white p-4 rounded shadow mb-8 space-y-3 border border-gray-200"
+              className="bg-white p-3 md:p-4 rounded shadow mb-6 md:mb-8 space-y-3 border border-gray-200"
             >
-              <h2 className="font-bold text-gray-700 border-b pb-2">
+              <h2 className="font-bold text-gray-700 border-b pb-2 text-sm md:text-base">
                 {editId ? "Edit Notice" : "Post New Notice"}
               </h2>
               <input
@@ -692,11 +753,11 @@ export default function Admin() {
                 rows={3}
                 required
               />
-              <div className="flex gap-2 pt-2">
+              <div className="flex flex-col sm:flex-row gap-2 pt-2">
                 <button
                   type="submit"
                   disabled={!isConnected}
-                  className="btn-primary bg-purple-600 hover:bg-purple-700"
+                  className="btn-primary bg-purple-600 hover:bg-purple-700 flex-1"
                 >
                   {editId ? "Update Notice" : "Post Notice"}
                 </button>
@@ -704,7 +765,7 @@ export default function Admin() {
                   <button
                     type="button"
                     onClick={resetForms}
-                    className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+                    className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 w-full sm:w-auto"
                   >
                     Cancel
                   </button>
@@ -716,14 +777,14 @@ export default function Admin() {
               {notices.map((item) => (
                 <div
                   key={item.id}
-                  className="bg-white p-4 rounded shadow border-l-4 border-purple-400 flex justify-between items-center"
+                  className="bg-white p-3 md:p-4 rounded shadow border-l-4 border-purple-400 flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3"
                 >
-                  <div className="w-3/4">
-                    <div className="flex justify-between items-end mb-1">
-                      <p className="font-bold text-gray-800 text-lg">
+                  <div className="flex-1">
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-1 mb-1">
+                      <p className="font-bold text-gray-800 text-base md:text-lg">
                         {item.title}
                       </p>
-                      <span className="text-xs text-gray-400">
+                      <span className="text-xs text-gray-400 whitespace-nowrap">
                         {new Date(item.notice_date).toLocaleDateString()}
                       </span>
                     </div>
@@ -731,16 +792,16 @@ export default function Admin() {
                       {item.text_content}
                     </p>
                   </div>
-                  <div className="flex gap-3 pl-2">
+                  <div className="flex gap-3 sm:flex-col lg:flex-row sm:pl-2">
                     <button
                       onClick={() => editNotice(item)}
-                      className="text-blue-600 font-bold text-sm hover:underline"
+                      className="text-blue-600 font-bold text-sm hover:underline flex-1 sm:flex-none"
                     >
                       EDIT
                     </button>
                     <button
                       onClick={() => deleteItem("notices", item.id)}
-                      className="text-red-600 font-bold text-sm hover:underline"
+                      className="text-red-600 font-bold text-sm hover:underline flex-1 sm:flex-none"
                     >
                       DEL
                     </button>
@@ -754,8 +815,8 @@ export default function Admin() {
         {/* ================= ALERTS TAB ================= */}
         {activeTab === "alerts" && (
           <div className="space-y-6">
-            <div className="bg-red-50 p-6 rounded-xl border-2 border-red-200 shadow-inner">
-              <h2 className="text-red-800 font-black text-xl mb-4 uppercase tracking-wide flex items-center gap-2">
+            <div className="bg-red-50 p-4 md:p-6 rounded-xl border-2 border-red-200 shadow-inner">
+              <h2 className="text-red-800 font-black text-lg md:text-xl mb-4 uppercase tracking-wide flex items-center gap-2">
                 🚨 Trigger Emergency Alert
               </h2>
               <form onSubmit={submitAlert} className="space-y-4">
@@ -789,7 +850,7 @@ export default function Admin() {
                 <button
                   type="submit"
                   disabled={!isConnected}
-                  className="w-full py-4 bg-red-600 text-white font-black text-lg rounded shadow-lg hover:bg-red-700 active:scale-95 transition"
+                  className="w-full py-3 md:py-4 bg-red-600 text-white font-black text-base md:text-lg rounded shadow-lg hover:bg-red-700 active:scale-95 transition"
                 >
                   BROADCAST ALERT
                 </button>
@@ -799,7 +860,7 @@ export default function Admin() {
             <button
               onClick={clearAllAlerts}
               disabled={!isConnected}
-              className="w-full py-3 bg-gray-600 text-white font-bold rounded hover:bg-gray-700 border border-gray-500"
+              className="w-full py-2 md:py-3 bg-gray-600 text-white font-bold text-sm md:text-base rounded hover:bg-gray-700 border border-gray-500"
             >
               CLEAR ALL ACTIVE ALERTS
             </button>
@@ -817,19 +878,19 @@ export default function Admin() {
                 alerts.map((item) => (
                   <div
                     key={item.id}
-                    className="bg-white p-4 rounded shadow border-l-8 border-red-600 flex justify-between items-center animate-pulse"
+                    className="bg-white p-3 md:p-4 rounded shadow border-l-8 border-red-600 flex flex-col sm:flex-row sm:justify-between sm:items-center animate-pulse gap-3"
                   >
-                    <div>
+                    <div className="flex-1">
                       <span className="text-xs font-bold bg-red-100 text-red-800 px-2 py-1 rounded uppercase">
                         {item.severity_level}
                       </span>
-                      <p className="font-bold text-red-600 text-lg mt-1">
+                      <p className="font-bold text-red-600 text-base md:text-lg mt-1">
                         {item.title}
                       </p>
                     </div>
                     <button
                       onClick={() => dismissAlert(item.id)}
-                      className="text-gray-500 text-xs border border-gray-300 px-3 py-2 rounded hover:bg-gray-100 hover:text-red-600 font-bold"
+                      className="text-gray-500 text-xs border border-gray-300 px-3 py-2 rounded hover:bg-gray-100 hover:text-red-600 font-bold w-full sm:w-auto"
                     >
                       Dismiss
                     </button>
