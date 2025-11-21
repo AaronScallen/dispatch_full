@@ -87,7 +87,7 @@ export default function Dashboard() {
       <header className="bg-slate-900 border-b border-slate-700 py-4 px-6">
         <div className="flex items-center gap-4">
           <Image
-            src="/icoreshield.png"
+            src="/icoreshield.PNG"
             alt="NISD Police Logo"
             width={64}
             height={64}
