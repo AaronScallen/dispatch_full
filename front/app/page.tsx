@@ -93,7 +93,7 @@ export default function Dashboard() {
   const todaysAbsences = absences.filter((a) => isSameDay(a.absence_date));
 
   return (
-    <main className="min-h-screen bg-slate-950 text-white font-sans selection:bg-blue-500 selection:text-white">
+    <main className="min-h-screen bg-slate-950 text-white font-sans selection:bg-blue-500 selection:text-white overflow-y-auto">
       {/* Visual Warning Overlay */}
       <ConnectionStatus isConnected={isConnected} />
 
@@ -101,16 +101,16 @@ export default function Dashboard() {
       <EmergencyBanner alerts={alerts} />
 
       {/* Header */}
-      <div className="bg-slate-800 border-b border-slate-700 px-3 sm:px-4 md:px-6 py-2 sm:py-3 md:py-4">
+      <div className="bg-slate-800 border-b border-slate-700 px-3 sm:px-4 md:px-6 py-2 sm:py-3 md:py-4 sticky top-0 z-10">
         <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-bold text-blue-400 uppercase tracking-wide text-center">
           NISD Police Department Operations
         </h1>
       </div>
 
-      <div className="p-2 sm:p-3 md:p-4 lg:p-6 min-h-screen flex flex-col gap-2 sm:gap-3 md:gap-4 lg:gap-6">
+      <div className="p-2 sm:p-3 md:p-4 lg:p-6 flex flex-col gap-2 sm:gap-3 md:gap-4 lg:gap-6">
         {/* Top Row */}
         <div className="flex flex-col xl:flex-row gap-2 sm:gap-3 md:gap-4 lg:gap-6">
-          <div className="xl:w-2/3 flex flex-col min-h-[300px] sm:min-h-[350px] md:min-h-[400px] lg:min-h-[450px]">
+          <div className="xl:w-2/3 flex flex-col min-h-[300px] sm:min-h-[350px] md:min-h-[400px] xl:h-[450px]">
             {/* Header with Count */}
             <div className="bg-slate-800 px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 border-b border-slate-700 rounded-t-lg flex justify-between items-center">
               <h2 className="text-sm sm:text-base md:text-lg lg:text-xl font-bold text-blue-400 uppercase tracking-wide">
@@ -127,17 +127,17 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div className="xl:w-1/3 min-h-[250px] sm:min-h-[300px] md:min-h-[350px] lg:min-h-[450px] overflow-y-auto">
+          <div className="xl:w-1/3 min-h-[250px] sm:min-h-[300px] md:min-h-[350px] xl:h-[450px] overflow-y-auto">
             <OnCallList data={onCall} />
           </div>
         </div>
 
         {/* Bottom Row */}
         <div className="flex flex-col xl:flex-row gap-2 sm:gap-3 md:gap-4 lg:gap-6 pb-4 sm:pb-6 md:pb-8 lg:pb-10">
-          <div className="xl:w-2/3 min-h-[300px] sm:min-h-[350px] md:min-h-[400px] lg:min-h-[450px]">
+          <div className="xl:w-2/3 min-h-[300px] sm:min-h-[350px] md:min-h-[400px] xl:h-[450px]">
             <EquipmentTable data={equipment} />
           </div>
-          <div className="xl:w-1/3 min-h-[250px] sm:min-h-[300px] md:min-h-[350px] lg:min-h-[450px] overflow-y-auto">
+          <div className="xl:w-1/3 min-h-[250px] sm:min-h-[300px] md:min-h-[350px] xl:h-[450px] overflow-y-auto">
             <NoticeBoard data={notices} />
           </div>
         </div>
