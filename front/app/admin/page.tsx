@@ -305,16 +305,20 @@ export default function Admin() {
 
   // --- RENDER ---
   return (
-    <div className="min-h-screen bg-gray-100 pb-20 font-sans">
+    <div className="min-h-screen bg-gray-100 pb-20 font-sans overflow-y-auto">
       {/* OFFLINE WARNING BANNER */}
       {!isConnected && (
-        <div className="bg-red-600 text-white text-center p-3 font-bold sticky top-0 z-[100] shadow-lg animate-pulse">
+        <div className="bg-red-600 text-white text-center p-3 font-bold fixed top-0 left-0 right-0 z-50 shadow-lg animate-pulse">
           ⚠️ SYSTEM OFFLINE - DO NOT SUBMIT CHANGES - ATTEMPTING RECONNECT...
         </div>
       )}
 
       {/* HEADER */}
-      <div className="bg-slate-900 text-white p-4 sticky top-0 z-50 shadow-md flex justify-between items-center">
+      <div
+        className={`bg-slate-900 text-white p-4 sticky z-40 shadow-md flex justify-between items-center ${
+          !isConnected ? "top-12" : "top-0"
+        }`}
+      >
         <div className="flex items-center gap-3">
           {/* Hamburger Button - Mobile Only */}
           <button
@@ -389,7 +393,11 @@ export default function Admin() {
       )}
 
       {/* NAVIGATION TABS - Desktop Only */}
-      <div className="bg-white shadow overflow-x-auto hidden md:flex sticky top-14 z-40">
+      <div
+        className={`bg-white shadow overflow-x-auto hidden md:flex sticky z-30 ${
+          !isConnected ? "top-26" : "top-14"
+        }`}
+      >
         {["absences", "equipment", "oncall", "notices", "alerts"].map((tab) => (
           <button
             key={tab}
