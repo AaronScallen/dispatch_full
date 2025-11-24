@@ -2,7 +2,6 @@
 import { useEffect, useState } from "react";
 import io from "socket.io-client";
 import axios from "axios";
-import Image from "next/image";
 import { Absence, Equipment, OnCall, Notice, Alert } from "../types";
 
 // Components
@@ -11,14 +10,31 @@ import AbsenceTable from "../components/AbsenceTable";
 import EquipmentTable from "../components/EquipmentTable";
 import OnCallList from "../components/OnCallList";
 import NoticeBoard from "../components/NoticeBoard";
-import ConnectionStatus from "../components/ConnectionStatus"; // <--- NEW IMPORT
+import ConnectionStatus from "../components/ConnectionStatus";
 
 const BACKEND_URL =
-  process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5000";
+  process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000";
 const socket = io(BACKEND_URL);
 
+// --- HELPER TO CHECK DATES ---
+const isSameDay = (dateString: string) => {
+  if (!dateString) return false;
+  const dbDate = new Date(dateString);
+
+  const userTimezoneOffset = dbDate.getTimezoneOffset() * 60000;
+  const adjustedDbDate = new Date(dbDate.getTime() + userTimezoneOffset);
+
+  const today = new Date();
+
+  return (
+    adjustedDbDate.getFullYear() === today.getFullYear() &&
+    adjustedDbDate.getMonth() === today.getMonth() &&
+    adjustedDbDate.getDate() === today.getDate()
+  );
+};
+
 export default function Dashboard() {
-  const [isConnected, setIsConnected] = useState(true); // <--- NEW STATE
+  const [isConnected, setIsConnected] = useState(true);
 
   const [absences, setAbsences] = useState<Absence[]>([]);
   const [equipment, setEquipment] = useState<Equipment[]>([]);
@@ -28,24 +44,19 @@ export default function Dashboard() {
 
   useEffect(() => {
     // 1. Handle Connection States
-    socket.on("connect", () => {
-      console.log("Connected to server");
-      setIsConnected(true);
-    });
-
-    socket.on("disconnect", () => {
-      console.log("Disconnected from server");
-      setIsConnected(false);
-    });
+    socket.on("connect", () => setIsConnected(true));
+    socket.on("disconnect", () => setIsConnected(false));
 
     // 2. Fetch Initial Data
     const fetchData = async () => {
       try {
-        const absRes = await axios.get(`${BACKEND_URL}/api/absences`);
-        const eqRes = await axios.get(`${BACKEND_URL}/api/equipment`);
-        const callRes = await axios.get(`${BACKEND_URL}/api/oncall`);
-        const notRes = await axios.get(`${BACKEND_URL}/api/notices`);
-        const alertRes = await axios.get(`${BACKEND_URL}/api/alerts`);
+        const [absRes, eqRes, callRes, notRes, alertRes] = await Promise.all([
+          axios.get(`${BACKEND_URL}/api/absences`),
+          axios.get(`${BACKEND_URL}/api/equipment`),
+          axios.get(`${BACKEND_URL}/api/oncall`),
+          axios.get(`${BACKEND_URL}/api/notices`),
+          axios.get(`${BACKEND_URL}/api/alerts`),
+        ]);
 
         setAbsences(absRes.data);
         setEquipment(eqRes.data);
@@ -54,7 +65,6 @@ export default function Dashboard() {
         setAlerts(alertRes.data);
       } catch (error) {
         console.error("Error fetching data", error);
-        // If fetch fails, we assume offline (or at least api is down)
         setIsConnected(false);
       }
     };
@@ -78,26 +88,14 @@ export default function Dashboard() {
     };
   }, []);
 
+  // --- FILTER LOGIC ---
+  // Only show absences where the date matches Today
+  const todaysAbsences = absences.filter((a) => isSameDay(a.absence_date));
+
   return (
     <main className="min-h-screen bg-slate-950 text-white font-sans selection:bg-blue-500 selection:text-white">
       {/* Visual Warning Overlay */}
       <ConnectionStatus isConnected={isConnected} />
-
-      {/* Header */}
-      <header className="bg-slate-900 border-b border-slate-700 py-4 px-6">
-        <div className="flex items-center gap-4">
-          <Image
-            src="/icoreshield.PNG"
-            alt="NISD Police Logo"
-            width={64}
-            height={64}
-            className="object-contain"
-          />
-          <h1 className="text-3xl font-bold text-white">
-            NISD Police Operations
-          </h1>
-        </div>
-      </header>
 
       {/* Emergency Alert Banner */}
       <EmergencyBanner alerts={alerts} />
@@ -105,9 +103,23 @@ export default function Dashboard() {
       <div className="p-6 h-screen flex flex-col gap-6">
         {/* Top Row */}
         <div className="flex flex-col lg:flex-row gap-6 h-1/2">
-          <div className="lg:w-2/3 h-full">
-            <AbsenceTable data={absences} />
+          <div className="lg:w-2/3 h-full flex flex-col">
+            {/* Header with Count */}
+            <div className="bg-slate-800 px-4 py-2 border-b border-slate-700 rounded-t-lg flex justify-between items-center">
+              <h2 className="text-xl font-bold text-blue-400 uppercase tracking-wide">
+                Officer Absences (Today)
+              </h2>
+              <span className="bg-slate-900 text-slate-400 text-xs px-2 py-1 rounded">
+                {todaysAbsences.length} Total
+              </span>
+            </div>
+
+            {/* We pass the filtered list here */}
+            <div className="flex-1 overflow-hidden">
+              <AbsenceTable data={todaysAbsences} />
+            </div>
           </div>
+
           <div className="lg:w-1/3 h-full overflow-y-auto">
             <OnCallList data={onCall} />
           </div>

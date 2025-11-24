@@ -176,7 +176,11 @@ export default function Admin() {
     setAbsBadge(item.badge_number);
     setAbsLoc(item.location_name);
     setAbsCover(item.covering_badge_number);
-    setAbsDate(new Date(item.absence_date).toISOString().split("T")[0]);
+    const rawDate =
+      typeof item.absence_date === "string"
+        ? item.absence_date
+        : new Date(item.absence_date).toISOString();
+    setAbsDate(rawDate.substring(0, 10));
     setAbsNote(item.notes);
     window.scrollTo(0, 0);
   };
@@ -334,7 +338,7 @@ export default function Admin() {
               }`}
             ></span>
           </button>
-          <h1 className="font-bold text-lg md:text-xl">Dispatch Admin</h1>
+          <h1 className="font-bold text-lg md:text-xl">Admin Entry</h1>
         </div>
         <div className="text-xs uppercase tracking-wider text-slate-400 bg-slate-800 px-2 py-1 rounded hidden sm:block">
           {activeTab} Manager
