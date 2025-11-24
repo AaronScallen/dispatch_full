@@ -100,6 +100,13 @@ export default function Dashboard() {
       {/* Emergency Alert Banner */}
       <EmergencyBanner alerts={alerts} />
 
+      {/* Header */}
+      <div className="bg-slate-800 border-b border-slate-700 px-6 py-4">
+        <h1 className="text-3xl font-bold text-blue-400 uppercase tracking-wide text-center">
+          NISD Police Department Operations
+        </h1>
+      </div>
+
       <div className="p-6 h-screen flex flex-col gap-6">
         {/* Top Row */}
         <div className="flex flex-col lg:flex-row gap-6 h-1/2">
