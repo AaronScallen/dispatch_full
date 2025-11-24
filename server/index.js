@@ -14,9 +14,11 @@ const PORT = process.env.PORT || 5000;
 // --- MIDDLEWARE ---
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || "*", // Allow all for testing, specific URL for prod
+    origin: ["http://localhost:3000", process.env.NEXT_PUBLIC_BACKEND_URL],
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true,
   })
-); // Allow requests from the Frontend
+);
 app.use(bodyParser.json()); // Parse JSON data from forms
 
 // --- DATABASE CONNECTION ---
@@ -26,7 +28,8 @@ const pool = new Pool({
   database: process.env.DB_NAME || "dispatch_db",
   password: process.env.DB_PASSWORD || "password",
   port: process.env.DB_PORT || 5432,
-  ssl: process.env.DB_HOST ? { rejectUnauthorized: false } : false,
+  ssl:
+    process.env.DB_HOST !== "localhost" ? { rejectUnauthorized: false } : false,
 });
 
 // [DEBUG] Test Database Connection Immediately
@@ -358,6 +361,17 @@ app.post("/api/alerts/clear", async (req, res) => {
     res.sendStatus(200);
   } catch (err) {
     res.status(500).send(err.message);
+  }
+});
+
+app.post("/api/verify-pin", (req, res) => {
+  const { pin } = req.body;
+  const CORRECT_PIN = process.env.ADMIN_PIN || "1234";
+
+  if (pin === CORRECT_PIN) {
+    res.json({ success: true, message: "Access Granted" });
+  } else {
+    res.status(401).json({ success: false, message: "Invalid PIN" });
   }
 });
 
