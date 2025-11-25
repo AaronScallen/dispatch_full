@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import { useUser } from "@stackframe/stack";
 import axios from "axios";
 import io from "socket.io-client";
 import { Absence, Equipment, OnCall, Notice, Alert } from "../../types";
@@ -13,6 +14,9 @@ const API = `${BACKEND_URL}/api`;
 const socket = io(BACKEND_URL);
 
 export default function Admin() {
+  // --- AUTH STATE ---
+  const user = useUser();
+
   // --- APP STATE ---
   const [isConnected, setIsConnected] = useState(true);
   const [activeTab, setActiveTab] = useState("absences");
@@ -344,8 +348,18 @@ export default function Admin() {
           </button>
           <h1 className="font-bold text-lg md:text-xl">Admin Entry</h1>
         </div>
-        <div className="text-xs uppercase tracking-wider text-slate-400 bg-slate-800 px-2 py-1 rounded hidden sm:block">
-          {activeTab} Manager
+        <div className="flex items-center gap-3">
+          <div className="text-xs uppercase tracking-wider text-slate-400 bg-slate-800 px-2 py-1 rounded hidden sm:block">
+            {activeTab} Manager
+          </div>
+          {user && (
+            <button
+              onClick={() => user.signOut()}
+              className="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded text-sm font-semibold transition-colors"
+            >
+              Logout
+            </button>
+          )}
         </div>
       </div>
 

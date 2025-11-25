@@ -1,8 +1,11 @@
 "use client";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useUser } from "@stackframe/stack";
 import io from "socket.io-client";
 import axios from "axios";
 import { Absence, Equipment, OnCall, Notice, Alert } from "../types";
+import Link from "next/link";
 
 // Components
 import EmergencyBanner from "../components/EmergencyBanner";
@@ -34,6 +37,8 @@ const isSameDay = (dateString: string) => {
 };
 
 export default function Dashboard() {
+  const router = useRouter();
+  const user = useUser();
   const [isConnected, setIsConnected] = useState(true);
 
   const [absences, setAbsences] = useState<Absence[]>([]);
@@ -41,6 +46,13 @@ export default function Dashboard() {
   const [onCall, setOnCall] = useState<OnCall[]>([]);
   const [notices, setNotices] = useState<Notice[]>([]);
   const [alerts, setAlerts] = useState<Alert[]>([]);
+
+  // Redirect authenticated users to admin page
+  useEffect(() => {
+    if (user) {
+      router.push("/admin");
+    }
+  }, [user, router]);
 
   useEffect(() => {
     // 1. Handle Connection States
@@ -97,6 +109,13 @@ export default function Dashboard() {
       <ConnectionStatus isConnected={isConnected} />
       <EmergencyBanner alerts={alerts} />
 
+      {/* Header */}
+      <div className="text-center py-4 lg:py-5">
+        <h1 className="text-2xl sm:text-3xl lg:text-3xl xl:text-4xl text-blue-400 uppercase tracking-wider font-mono font-extrabold">
+          NISD Police Operations
+        </h1>
+      </div>
+
       {/* LAYOUT FIX: 
          1. h-auto on mobile (allows scrolling)
          2. lg:h-[calc(100vh-100px)] on desktop (locks to screen size for TV)
@@ -134,6 +153,16 @@ export default function Dashboard() {
             <NoticeBoard data={notices} />
           </div>
         </div>
+      </div>
+
+      {/* Admin Link */}
+      <div className="fixed bottom-2 right-2 opacity-50 hover:opacity-100 transition-opacity">
+        <Link
+          href="/admin"
+          className="text-xs text-slate-500 hover:text-slate-300"
+        >
+          Admin
+        </Link>
       </div>
     </main>
   );
