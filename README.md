@@ -30,6 +30,7 @@ dispatch_full/
 ## Tech Stack
 
 ### Frontend
+
 - **Framework**: Next.js 16 (React 19)
 - **Authentication**: Stack Auth
 - **Styling**: Tailwind CSS
@@ -37,6 +38,7 @@ dispatch_full/
 - **Language**: TypeScript
 
 ### Backend
+
 - **Framework**: Express.js
 - **Database**: PostgreSQL
 - **Real-time**: Socket.IO
@@ -45,23 +47,27 @@ dispatch_full/
 ## Local Development
 
 ### Prerequisites
-- Node.js 18+ 
+
+- Node.js 18+
 - PostgreSQL database
 - Stack Auth account
 
 ### Backend Setup
 
 1. Navigate to server directory:
+
 ```bash
 cd server
 ```
 
 2. Install dependencies:
+
 ```bash
 npm install
 ```
 
 3. Create `.env` file (use `.env.example` as template):
+
 ```env
 PORT=5000
 FRONTEND_URL=http://localhost:3000
@@ -75,6 +81,7 @@ DB_PORT=5432
 4. Setup database tables (see DEPLOYMENT.md for schema)
 
 5. Start server:
+
 ```bash
 npm start
 ```
@@ -82,16 +89,19 @@ npm start
 ### Frontend Setup
 
 1. Navigate to front directory:
+
 ```bash
 cd front
 ```
 
 2. Install dependencies:
+
 ```bash
 npm install
 ```
 
 3. Create `.env.local` file (use `.env.example` as template):
+
 ```env
 NEXT_PUBLIC_BACKEND_URL=http://localhost:5000
 NEXT_PUBLIC_STACK_PROJECT_ID=your_stack_project_id
@@ -99,6 +109,7 @@ NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY=your_stack_key
 ```
 
 4. Start development server:
+
 ```bash
 npm run dev
 ```
@@ -108,6 +119,7 @@ npm run dev
 ## Deployment
 
 See [DEPLOYMENT.md](./DEPLOYMENT.md) for comprehensive deployment instructions for:
+
 - Render (Backend + PostgreSQL)
 - Vercel (Frontend)
 - Stack Auth configuration
@@ -115,11 +127,13 @@ See [DEPLOYMENT.md](./DEPLOYMENT.md) for comprehensive deployment instructions f
 ## Environment Variables
 
 ### Backend (Render)
+
 - `PORT` - Server port (default: 5000)
 - `FRONTEND_URL` - Vercel deployment URL
 - `DB_USER`, `DB_HOST`, `DB_NAME`, `DB_PASSWORD`, `DB_PORT` - PostgreSQL credentials
 
 ### Frontend (Vercel)
+
 - `NEXT_PUBLIC_BACKEND_URL` - Render backend URL
 - `NEXT_PUBLIC_STACK_PROJECT_ID` - Stack Auth project ID
 - `NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY` - Stack Auth client key
@@ -127,30 +141,35 @@ See [DEPLOYMENT.md](./DEPLOYMENT.md) for comprehensive deployment instructions f
 ## API Endpoints
 
 ### Absences
+
 - `GET /api/absences` - List all absences
 - `POST /api/absences` - Create absence
 - `PUT /api/absences/:id` - Update absence
 - `DELETE /api/absences/:id` - Delete absence
 
 ### Equipment
+
 - `GET /api/equipment` - List downed equipment
 - `POST /api/equipment` - Report downed equipment
 - `PUT /api/equipment/:id` - Update equipment status
 - `DELETE /api/equipment/:id` - Remove equipment entry
 
 ### On-Call Staff
+
 - `GET /api/oncall` - List on-call staff
 - `POST /api/oncall` - Add on-call staff
 - `PUT /api/oncall/:id` - Update on-call info
 - `DELETE /api/oncall/:id` - Remove on-call staff
 
 ### Notices
+
 - `GET /api/notices` - List all notices
 - `POST /api/notices` - Create notice
 - `PUT /api/notices/:id` - Update notice
 - `DELETE /api/notices/:id` - Delete notice
 
 ### Emergency Alerts
+
 - `GET /api/alerts` - Get active alerts
 - `POST /api/alerts` - Create alert
 - `PUT /api/alerts/:id/dismiss` - Dismiss alert
