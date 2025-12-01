@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useUser } from "@stackframe/stack";
 import axios from "axios";
 import io from "socket.io-client";
+import toast, { Toaster } from "react-hot-toast";
 import { Absence, Equipment, OnCall, Notice, Alert } from "../../types";
 
 // --- CONFIGURATION ---
@@ -143,13 +144,13 @@ export default function Admin() {
   };
 
   const deleteItem = async (endpoint: string, id: number) => {
-    if (!isConnected) return alert("Cannot delete while offline.");
+    if (!isConnected) return toast.error("Cannot delete while offline.");
     if (!confirm("Are you sure you want to delete this item?")) return;
     try {
       await axios.delete(`${API}/${endpoint}/${id}`);
       handleSuccess("Item Deleted");
     } catch {
-      alert("Error deleting item");
+      toast.error("Error deleting item");
     }
   };
 
@@ -177,7 +178,7 @@ export default function Admin() {
       else await axios.post(`${API}/absences`, payload);
       handleSuccess(editId ? "Absence Updated" : "Absence Added");
     } catch {
-      alert("Error saving");
+      toast.error("Error saving absence");
     }
   };
 
@@ -217,7 +218,7 @@ export default function Admin() {
       else await axios.post(`${API}/equipment`, payload);
       handleSuccess(editId ? "Equipment Updated" : "Equipment Reported");
     } catch {
-      alert("Error saving");
+      toast.error("Error saving equipment");
     }
   };
 
@@ -251,7 +252,7 @@ export default function Admin() {
       else await axios.post(`${API}/oncall`, payload);
       handleSuccess(editId ? "Staff Updated" : "Staff Added");
     } catch {
-      alert("Error saving");
+      toast.error("Error saving on-call staff");
     }
   };
 
@@ -283,7 +284,7 @@ export default function Admin() {
       else await axios.post(`${API}/notices`, payload);
       handleSuccess(editId ? "Notice Updated" : "Notice Posted");
     } catch {
-      alert("Error saving");
+      toast.error("Error saving notice");
     }
   };
 
@@ -309,7 +310,7 @@ export default function Admin() {
       });
       handleSuccess("ALERT BROADCASTED");
     } catch {
-      alert("Error sending alert");
+      toast.error("Error sending alert");
     }
   };
 
@@ -323,7 +324,7 @@ export default function Admin() {
       });
       handleSuccess("Alert Dismissed");
     } catch {
-      alert("Error dismissing");
+      toast.error("Error dismissing alert");
     }
   };
 
@@ -334,13 +335,36 @@ export default function Admin() {
       await axios.post(`${API}/alerts/clear`);
       handleSuccess("All Alerts Cleared");
     } catch {
-      alert("Error clearing alerts");
+      toast.error("Error clearing alerts");
     }
   };
 
   // --- RENDER ---
   return (
     <div className="min-h-screen bg-gray-100 pb-20 font-sans overflow-y-auto relative">
+      <Toaster
+        position="top-center"
+        toastOptions={{
+          duration: 3000,
+          style: {
+            background: "#333",
+            color: "#fff",
+            fontWeight: "bold",
+          },
+          success: {
+            iconTheme: {
+              primary: "#10b981",
+              secondary: "#fff",
+            },
+          },
+          error: {
+            iconTheme: {
+              primary: "#ef4444",
+              secondary: "#fff",
+            },
+          },
+        }}
+      />
       {/* OFFLINE WARNING BANNER */}
       {!isConnected && (
         <div className="bg-red-600 text-white text-center p-3 font-bold fixed top-0 left-0 right-0 z-50 shadow-lg animate-pulse">
