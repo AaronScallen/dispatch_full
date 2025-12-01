@@ -148,7 +148,7 @@ export default function Admin() {
     try {
       await axios.delete(`${API}/${endpoint}/${id}`);
       handleSuccess("Item Deleted");
-    } catch (err) {
+    } catch {
       alert("Error deleting item");
     }
   };
@@ -165,12 +165,18 @@ export default function Admin() {
       covering_badge_number: absCover,
       absence_date: absDate || new Date(),
       notes: absNote,
+      created_by_email: user?.primaryEmail || "unknown",
+      created_by_name:
+        user?.displayName || user?.primaryEmail || "Unknown User",
+      updated_by_email: user?.primaryEmail || "unknown",
+      updated_by_name:
+        user?.displayName || user?.primaryEmail || "Unknown User",
     };
     try {
       if (editId) await axios.put(`${API}/absences/${editId}`, payload);
       else await axios.post(`${API}/absences`, payload);
       handleSuccess(editId ? "Absence Updated" : "Absence Added");
-    } catch (err) {
+    } catch {
       alert("Error saving");
     }
   };
@@ -199,12 +205,18 @@ export default function Admin() {
       title: eqTitle,
       status: eqStatus,
       notes: eqNotes,
+      created_by_email: user?.primaryEmail || "unknown",
+      created_by_name:
+        user?.displayName || user?.primaryEmail || "Unknown User",
+      updated_by_email: user?.primaryEmail || "unknown",
+      updated_by_name:
+        user?.displayName || user?.primaryEmail || "Unknown User",
     };
     try {
       if (editId) await axios.put(`${API}/equipment/${editId}`, payload);
       else await axios.post(`${API}/equipment`, payload);
       handleSuccess(editId ? "Equipment Updated" : "Equipment Reported");
-    } catch (err) {
+    } catch {
       alert("Error saving");
     }
   };
@@ -227,12 +239,18 @@ export default function Admin() {
       department_name: ocDept,
       person_name: ocName,
       phone_number: ocPhone,
+      created_by_email: user?.primaryEmail || "unknown",
+      created_by_name:
+        user?.displayName || user?.primaryEmail || "Unknown User",
+      updated_by_email: user?.primaryEmail || "unknown",
+      updated_by_name:
+        user?.displayName || user?.primaryEmail || "Unknown User",
     };
     try {
       if (editId) await axios.put(`${API}/oncall/${editId}`, payload);
       else await axios.post(`${API}/oncall`, payload);
       handleSuccess(editId ? "Staff Updated" : "Staff Added");
-    } catch (err) {
+    } catch {
       alert("Error saving");
     }
   };
@@ -253,12 +271,18 @@ export default function Admin() {
       notice_date: notDate || new Date(),
       title: notTitle,
       text_content: notText,
+      created_by_email: user?.primaryEmail || "unknown",
+      created_by_name:
+        user?.displayName || user?.primaryEmail || "Unknown User",
+      updated_by_email: user?.primaryEmail || "unknown",
+      updated_by_name:
+        user?.displayName || user?.primaryEmail || "Unknown User",
     };
     try {
       if (editId) await axios.put(`${API}/notices/${editId}`, payload);
       else await axios.post(`${API}/notices`, payload);
       handleSuccess(editId ? "Notice Updated" : "Notice Posted");
-    } catch (err) {
+    } catch {
       alert("Error saving");
     }
   };
@@ -279,9 +303,12 @@ export default function Admin() {
       await axios.post(`${API}/alerts`, {
         severity_level: alertLevel,
         title: alertTitle,
+        created_by_email: user?.primaryEmail || "unknown",
+        created_by_name:
+          user?.displayName || user?.primaryEmail || "Unknown User",
       });
       handleSuccess("ALERT BROADCASTED");
-    } catch (err) {
+    } catch {
       alert("Error sending alert");
     }
   };
@@ -289,9 +316,13 @@ export default function Admin() {
   const dismissAlert = async (id: number) => {
     if (!isConnected) return;
     try {
-      await axios.put(`${API}/alerts/${id}/dismiss`);
+      await axios.put(`${API}/alerts/${id}/dismiss`, {
+        updated_by_email: user?.primaryEmail || "unknown",
+        updated_by_name:
+          user?.displayName || user?.primaryEmail || "Unknown User",
+      });
       handleSuccess("Alert Dismissed");
-    } catch (err) {
+    } catch {
       alert("Error dismissing");
     }
   };
@@ -302,14 +333,14 @@ export default function Admin() {
     try {
       await axios.post(`${API}/alerts/clear`);
       handleSuccess("All Alerts Cleared");
-    } catch (err) {
+    } catch {
       alert("Error clearing alerts");
     }
   };
 
   // --- RENDER ---
   return (
-    <div className="min-h-screen bg-gray-100 pb-20 font-sans overflow-y-auto">
+    <div className="min-h-screen bg-gray-100 pb-20 font-sans overflow-y-auto relative">
       {/* OFFLINE WARNING BANNER */}
       {!isConnected && (
         <div className="bg-red-600 text-white text-center p-3 font-bold fixed top-0 left-0 right-0 z-50 shadow-lg animate-pulse">
@@ -840,93 +871,114 @@ export default function Admin() {
 
         {/* ================= ALERTS TAB ================= */}
         {activeTab === "alerts" && (
-          <div className="space-y-6">
-            <div className="bg-red-50 p-4 md:p-6 rounded-xl border-2 border-red-200 shadow-inner">
-              <h2 className="text-red-800 font-black text-lg md:text-xl mb-4 uppercase tracking-wide flex items-center gap-2">
-                🚨 Trigger Emergency Alert
-              </h2>
-              <form onSubmit={submitAlert} className="space-y-4">
-                <div>
-                  <label className="block text-xs font-bold text-red-800 uppercase mb-1">
-                    Severity
-                  </label>
-                  <select
-                    value={alertLevel}
-                    onChange={(e) => setAlertLevel(e.target.value)}
-                    className="input-field bg-white border-red-200 text-red-900 font-bold"
-                  >
-                    <option value="Low">Low Severity (Yellow)</option>
-                    <option value="Medium">Medium Severity (Orange)</option>
-                    <option value="High">High Severity (Red)</option>
-                    <option value="Critical">CRITICAL (Flashing)</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-red-800 uppercase mb-1">
-                    Alert Text
-                  </label>
-                  <input
-                    placeholder="e.g. OFFICER DOWN - DOWNTOWN SECTOR"
-                    value={alertTitle}
-                    onChange={(e) => setAlertTitle(e.target.value)}
-                    className="input-field border-red-200"
-                    required
-                  />
-                </div>
-                <button
-                  type="submit"
-                  disabled={!isConnected}
-                  className="w-full py-3 md:py-4 bg-red-600 text-white font-black text-base md:text-lg rounded shadow-lg hover:bg-red-700 active:scale-95 transition"
-                >
-                  BROADCAST ALERT
-                </button>
-              </form>
-            </div>
-
-            <button
-              onClick={clearAllAlerts}
-              disabled={!isConnected}
-              className="w-full py-2 md:py-3 bg-gray-600 text-white font-bold text-sm md:text-base rounded hover:bg-gray-700 border border-gray-500"
-            >
-              CLEAR ALL ACTIVE ALERTS
-            </button>
-
-            {/* Active Alerts List */}
-            <div className="space-y-2 mt-6">
-              <h3 className="font-bold text-gray-500 uppercase text-xs tracking-wide">
-                Currently Active Alerts
-              </h3>
-              {alerts.length === 0 ? (
-                <p className="text-gray-400 text-sm italic bg-white p-4 rounded border border-dashed">
-                  No active alerts.
-                </p>
-              ) : (
-                alerts.map((item) => (
-                  <div
-                    key={item.id}
-                    className="bg-white p-3 md:p-4 rounded shadow border-l-8 border-red-600 flex flex-col sm:flex-row sm:justify-between sm:items-center animate-pulse gap-3"
-                  >
-                    <div className="flex-1">
-                      <span className="text-xs font-bold bg-red-100 text-red-800 px-2 py-1 rounded uppercase">
-                        {item.severity_level}
-                      </span>
-                      <p className="font-bold text-red-600 text-base md:text-lg mt-1">
-                        {item.title}
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => dismissAlert(item.id)}
-                      className="text-gray-500 text-xs border border-gray-300 px-3 py-2 rounded hover:bg-gray-100 hover:text-red-600 font-bold w-full sm:w-auto"
+          <>
+            <div className="space-y-6">
+              <div className="bg-red-50 p-4 md:p-6 rounded-xl border-2 border-red-200 shadow-inner">
+                <h2 className="text-red-800 font-black text-lg md:text-xl mb-4 uppercase tracking-wide flex items-center gap-2">
+                  🚨 Trigger Emergency Alert
+                </h2>
+                <form onSubmit={submitAlert} className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-bold text-red-800 uppercase mb-1">
+                      Severity
+                    </label>
+                    <select
+                      value={alertLevel}
+                      onChange={(e) => setAlertLevel(e.target.value)}
+                      className="input-field bg-white border-red-200 text-red-900 font-bold"
                     >
-                      Dismiss
-                    </button>
+                      <option value="Low">Low Severity (Yellow)</option>
+                      <option value="Medium">Medium Severity (Orange)</option>
+                      <option value="High">High Severity (Red)</option>
+                      <option value="Critical">CRITICAL (Flashing)</option>
+                    </select>
                   </div>
-                ))
+                  <div>
+                    <label className="block text-xs font-bold text-red-800 uppercase mb-1">
+                      Alert Text
+                    </label>
+                    <input
+                      placeholder="e.g. OFFICER DOWN - DOWNTOWN SECTOR"
+                      value={alertTitle}
+                      onChange={(e) => setAlertTitle(e.target.value)}
+                      className="input-field border-red-200"
+                      required
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={!isConnected}
+                    className="w-full py-3 md:py-4 bg-red-600 text-white font-black text-base md:text-lg rounded shadow-lg hover:bg-red-700 active:scale-95 transition"
+                  >
+                    BROADCAST ALERT
+                  </button>
+                </form>
+              </div>
+
+              <button
+                onClick={clearAllAlerts}
+                disabled={!isConnected}
+                className="w-full py-2 md:py-3 bg-gray-600 text-white font-bold text-sm md:text-base rounded hover:bg-gray-700 border border-gray-500"
+              >
+                CLEAR ALL ACTIVE ALERTS
+              </button>
+
+              {/* Active Alerts List */}
+              <div className="space-y-2 mt-6">
+                <h3 className="font-bold text-gray-500 uppercase text-xs tracking-wide">
+                  Currently Active Alerts
+                </h3>
+                {alerts.length === 0 ? (
+                  <p className="text-gray-400 text-sm italic bg-white p-4 rounded border border-dashed">
+                    No active alerts.
+                  </p>
+                ) : (
+                  alerts.map((item) => (
+                    <div
+                      key={item.id}
+                      className="bg-white p-3 md:p-4 rounded shadow border-l-8 border-red-600 flex flex-col sm:flex-row sm:justify-between sm:items-center animate-pulse gap-3"
+                    >
+                      <div className="flex-1">
+                        <span className="text-xs font-bold bg-red-100 text-red-800 px-2 py-1 rounded uppercase">
+                          {item.severity_level}
+                        </span>
+                        <p className="font-bold text-red-600 text-base md:text-lg mt-1">
+                          {item.title}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => dismissAlert(item.id)}
+                        className="text-gray-500 text-xs border border-gray-300 px-3 py-2 rounded hover:bg-gray-100 hover:text-red-600 font-bold w-full sm:w-auto"
+                      >
+                        Dismiss
+                      </button>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* USER INFO DISPLAY - BOTTOM RIGHT */}
+      {user && (
+        <div className="fixed bottom-4 right-4 bg-slate-900 text-white px-4 py-2 rounded-lg shadow-lg border border-slate-700 z-50">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+            <div className="text-xs">
+              <p className="font-semibold">
+                {user.displayName || user.primaryEmail || "User"}
+              </p>
+              {user.displayName && user.primaryEmail && (
+                <p className="text-slate-400 text-[10px]">
+                  {user.primaryEmail}
+                </p>
               )}
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }

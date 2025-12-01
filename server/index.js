@@ -114,11 +114,21 @@ app.post("/api/absences", async (req, res) => {
     covering_badge_number,
     absence_date,
     notes,
+    created_by_email,
+    created_by_name,
   } = req.body;
   try {
     await pool.query(
-      "INSERT INTO absences (badge_number, location_name, covering_badge_number, absence_date, notes) VALUES ($1, $2, $3, $4, $5)",
-      [badge_number, location_name, covering_badge_number, absence_date, notes]
+      "INSERT INTO absences (badge_number, location_name, covering_badge_number, absence_date, notes, created_by_email, created_by_name) VALUES ($1, $2, $3, $4, $5, $6, $7)",
+      [
+        badge_number,
+        location_name,
+        covering_badge_number,
+        absence_date,
+        notes,
+        created_by_email,
+        created_by_name,
+      ]
     );
     await broadcastUpdate("absences", "absence_date DESC", "update_absences");
     res.sendStatus(201);
@@ -134,16 +144,20 @@ app.put("/api/absences/:id", async (req, res) => {
     covering_badge_number,
     absence_date,
     notes,
+    updated_by_email,
+    updated_by_name,
   } = req.body;
   try {
     await pool.query(
-      "UPDATE absences SET badge_number=$1, location_name=$2, covering_badge_number=$3, absence_date=$4, notes=$5 WHERE id=$6",
+      "UPDATE absences SET badge_number=$1, location_name=$2, covering_badge_number=$3, absence_date=$4, notes=$5, updated_by_email=$6, updated_by_name=$7 WHERE id=$8",
       [
         badge_number,
         location_name,
         covering_badge_number,
         absence_date,
         notes,
+        updated_by_email,
+        updated_by_name,
         req.params.id,
       ]
     );
@@ -177,12 +191,27 @@ app.get("/api/equipment", async (req, res) => {
 });
 
 app.post("/api/equipment", async (req, res) => {
-  const { equipment_type, equipment_id_number, title, status, notes } =
-    req.body;
+  const {
+    equipment_type,
+    equipment_id_number,
+    title,
+    status,
+    notes,
+    created_by_email,
+    created_by_name,
+  } = req.body;
   try {
     await pool.query(
-      "INSERT INTO downed_equipment (equipment_type, equipment_id_number, title, status, notes) VALUES ($1, $2, $3, $4, $5)",
-      [equipment_type, equipment_id_number, title, status, notes]
+      "INSERT INTO downed_equipment (equipment_type, equipment_id_number, title, status, notes, created_by_email, created_by_name) VALUES ($1, $2, $3, $4, $5, $6, $7)",
+      [
+        equipment_type,
+        equipment_id_number,
+        title,
+        status,
+        notes,
+        created_by_email,
+        created_by_name,
+      ]
     );
     await broadcastUpdate("downed_equipment", "id DESC", "update_equipment");
     res.sendStatus(201);
@@ -192,12 +221,28 @@ app.post("/api/equipment", async (req, res) => {
 });
 
 app.put("/api/equipment/:id", async (req, res) => {
-  const { equipment_type, equipment_id_number, title, status, notes } =
-    req.body;
+  const {
+    equipment_type,
+    equipment_id_number,
+    title,
+    status,
+    notes,
+    updated_by_email,
+    updated_by_name,
+  } = req.body;
   try {
     await pool.query(
-      "UPDATE downed_equipment SET equipment_type=$1, equipment_id_number=$2, title=$3, status=$4, notes=$5 WHERE id=$6",
-      [equipment_type, equipment_id_number, title, status, notes, req.params.id]
+      "UPDATE downed_equipment SET equipment_type=$1, equipment_id_number=$2, title=$3, status=$4, notes=$5, updated_by_email=$6, updated_by_name=$7 WHERE id=$8",
+      [
+        equipment_type,
+        equipment_id_number,
+        title,
+        status,
+        notes,
+        updated_by_email,
+        updated_by_name,
+        req.params.id,
+      ]
     );
     await broadcastUpdate("downed_equipment", "id DESC", "update_equipment");
     res.sendStatus(200);
@@ -231,11 +276,23 @@ app.get("/api/oncall", async (req, res) => {
 });
 
 app.post("/api/oncall", async (req, res) => {
-  const { department_name, person_name, phone_number } = req.body;
+  const {
+    department_name,
+    person_name,
+    phone_number,
+    created_by_email,
+    created_by_name,
+  } = req.body;
   try {
     await pool.query(
-      "INSERT INTO on_call_staff (department_name, person_name, phone_number) VALUES ($1, $2, $3)",
-      [department_name, person_name, phone_number]
+      "INSERT INTO on_call_staff (department_name, person_name, phone_number, created_by_email, created_by_name) VALUES ($1, $2, $3, $4, $5)",
+      [
+        department_name,
+        person_name,
+        phone_number,
+        created_by_email,
+        created_by_name,
+      ]
     );
     await broadcastUpdate("on_call_staff", "id ASC", "update_oncall");
     res.sendStatus(201);
@@ -245,11 +302,24 @@ app.post("/api/oncall", async (req, res) => {
 });
 
 app.put("/api/oncall/:id", async (req, res) => {
-  const { department_name, person_name, phone_number } = req.body;
+  const {
+    department_name,
+    person_name,
+    phone_number,
+    updated_by_email,
+    updated_by_name,
+  } = req.body;
   try {
     await pool.query(
-      "UPDATE on_call_staff SET department_name=$1, person_name=$2, phone_number=$3 WHERE id=$4",
-      [department_name, person_name, phone_number, req.params.id]
+      "UPDATE on_call_staff SET department_name=$1, person_name=$2, phone_number=$3, updated_by_email=$4, updated_by_name=$5 WHERE id=$6",
+      [
+        department_name,
+        person_name,
+        phone_number,
+        updated_by_email,
+        updated_by_name,
+        req.params.id,
+      ]
     );
     await broadcastUpdate("on_call_staff", "id ASC", "update_oncall");
     res.sendStatus(200);
@@ -281,11 +351,17 @@ app.get("/api/notices", async (req, res) => {
 });
 
 app.post("/api/notices", async (req, res) => {
-  const { notice_date, title, text_content } = req.body;
+  const {
+    notice_date,
+    title,
+    text_content,
+    created_by_email,
+    created_by_name,
+  } = req.body;
   try {
     await pool.query(
-      "INSERT INTO notices (notice_date, title, text_content) VALUES ($1, $2, $3)",
-      [notice_date, title, text_content]
+      "INSERT INTO notices (notice_date, title, text_content, created_by_email, created_by_name) VALUES ($1, $2, $3, $4, $5)",
+      [notice_date, title, text_content, created_by_email, created_by_name]
     );
     await broadcastUpdate("notices", "notice_date DESC", "update_notices");
     res.sendStatus(201);
@@ -295,11 +371,24 @@ app.post("/api/notices", async (req, res) => {
 });
 
 app.put("/api/notices/:id", async (req, res) => {
-  const { notice_date, title, text_content } = req.body;
+  const {
+    notice_date,
+    title,
+    text_content,
+    updated_by_email,
+    updated_by_name,
+  } = req.body;
   try {
     await pool.query(
-      "UPDATE notices SET notice_date=$1, title=$2, text_content=$3 WHERE id=$4",
-      [notice_date, title, text_content, req.params.id]
+      "UPDATE notices SET notice_date=$1, title=$2, text_content=$3, updated_by_email=$4, updated_by_name=$5 WHERE id=$6",
+      [
+        notice_date,
+        title,
+        text_content,
+        updated_by_email,
+        updated_by_name,
+        req.params.id,
+      ]
     );
     await broadcastUpdate("notices", "notice_date DESC", "update_notices");
     res.sendStatus(200);
@@ -332,11 +421,11 @@ app.get("/api/alerts", async (req, res) => {
 });
 
 app.post("/api/alerts", async (req, res) => {
-  const { severity_level, title } = req.body;
+  const { severity_level, title, created_by_email, created_by_name } = req.body;
   try {
     await pool.query(
-      "INSERT INTO emergency_alerts (severity_level, title, active) VALUES ($1, $2, true)",
-      [severity_level, title]
+      "INSERT INTO emergency_alerts (severity_level, title, active, created_by_email, created_by_name) VALUES ($1, $2, true, $3, $4)",
+      [severity_level, title, created_by_email, created_by_name]
     );
     await broadcastUpdate("emergency_alerts", "id DESC", "update_alerts");
     res.sendStatus(201);
@@ -346,10 +435,12 @@ app.post("/api/alerts", async (req, res) => {
 });
 
 app.put("/api/alerts/:id/dismiss", async (req, res) => {
+  const { updated_by_email, updated_by_name } = req.body;
   try {
-    await pool.query("UPDATE emergency_alerts SET active = false WHERE id=$1", [
-      req.params.id,
-    ]);
+    await pool.query(
+      "UPDATE emergency_alerts SET active = false, updated_by_email=$1, updated_by_name=$2 WHERE id=$3",
+      [updated_by_email, updated_by_name, req.params.id]
+    );
     await broadcastUpdate("emergency_alerts", "id DESC", "update_alerts");
     res.sendStatus(200);
   } catch (err) {

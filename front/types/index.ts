@@ -7,6 +7,12 @@ export interface Absence {
   covering_badge_number: string;
   absence_date: string;
   notes: string;
+  created_by_email?: string;
+  created_by_name?: string;
+  updated_by_email?: string;
+  updated_by_name?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface Equipment {
@@ -17,6 +23,12 @@ export interface Equipment {
   status: string;
   notes: string;
   entry_date: string;
+  created_by_email?: string;
+  created_by_name?: string;
+  updated_by_email?: string;
+  updated_by_name?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface OnCall {
@@ -24,6 +36,12 @@ export interface OnCall {
   department_name: string;
   person_name: string;
   phone_number: string;
+  created_by_email?: string;
+  created_by_name?: string;
+  updated_by_email?: string;
+  updated_by_name?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface Notice {
@@ -31,6 +49,12 @@ export interface Notice {
   notice_date: string;
   title: string;
   text_content: string;
+  created_by_email?: string;
+  created_by_name?: string;
+  updated_by_email?: string;
+  updated_by_name?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface Alert {
@@ -38,4 +62,10 @@ export interface Alert {
   severity_level: "Low" | "Medium" | "High" | "Critical";
   title: string;
   active: boolean;
+  created_by_email?: string;
+  created_by_name?: string;
+  updated_by_email?: string;
+  updated_by_name?: string;
+  created_at?: string;
+  updated_at?: string;
 }

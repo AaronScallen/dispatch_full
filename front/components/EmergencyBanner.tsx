@@ -6,6 +6,8 @@ import { useState, useEffect, useRef } from "react";
 export default function EmergencyBanner({ alerts }: { alerts: Alert[] }) {
   const [elapsedTime, setElapsedTime] = useState(0);
   const startTimeRef = useRef<number>(0);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const lastAlertIdRef = useRef<number | null>(null);
 
   const activeAlert = alerts[0]; // Display the most recent active alert
   const hasAlert = alerts.length > 0;
@@ -13,6 +15,27 @@ export default function EmergencyBanner({ alerts }: { alerts: Alert[] }) {
     hasAlert &&
     (activeAlert.severity_level.toLowerCase() === "high" ||
       activeAlert.severity_level.toLowerCase() === "critical");
+
+  // Audio alert effect - plays sound when a new alert appears
+  useEffect(() => {
+    if (!hasAlert) {
+      lastAlertIdRef.current = null;
+      return;
+    }
+
+    // Play sound only when a new alert appears (different ID)
+    if (activeAlert.id !== lastAlertIdRef.current) {
+      if (!audioRef.current) {
+        audioRef.current = new Audio("/alert-sound.wav");
+      }
+
+      audioRef.current.play().catch((error) => {
+        console.error("Error playing alert sound:", error);
+      });
+
+      lastAlertIdRef.current = activeAlert.id;
+    }
+  }, [hasAlert, activeAlert?.id]);
 
   // Timer effect - runs when alert is high or critical
   useEffect(() => {
