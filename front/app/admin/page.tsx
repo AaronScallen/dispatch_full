@@ -85,6 +85,32 @@ export default function Admin() {
     }
   };
 
+  // --- TRACK ADMIN LOGIN ---
+  useEffect(() => {
+    const logAdminLogin = async () => {
+      if (user) {
+        try {
+          await axios.post(`${API}/admin-login`, {
+            user_id: user.id,
+            user_email: user.primaryEmail || "unknown",
+            ip_address: null, // IP will be captured server-side if needed
+            user_agent: navigator.userAgent,
+            session_info: {
+              display_name: user.displayName,
+              primary_email_verified: user.primaryEmailVerified,
+            },
+          });
+          console.log("Admin login tracked successfully");
+        } catch (err) {
+          console.error("Failed to track admin login:", err);
+          // Don't block the app if tracking fails
+        }
+      }
+    };
+
+    logAdminLogin();
+  }, [user]);
+
   useEffect(() => {
     // Defer the initial fetch to avoid triggering synchronous setState within the effect
     let isMounted = true;

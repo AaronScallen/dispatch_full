@@ -13,10 +13,13 @@ export default function EquipmentTable({ data }: { data: Equipment[] }) {
           <thead className="bg-slate-950 text-slate-500 uppercase text-[10px] sm:text-xs">
             <tr>
               <th className="px-2 sm:px-3 md:px-4 py-2 sm:py-2.5 md:py-3">
+                Type
+              </th>
+              <th className="px-2 sm:px-3 md:px-4 py-2 sm:py-2.5 md:py-3">
                 ID
               </th>
               <th className="px-2 sm:px-3 md:px-4 py-2 sm:py-2.5 md:py-3">
-                Item
+                Location
               </th>
               <th className="px-2 sm:px-3 md:px-4 py-2 sm:py-2.5 md:py-3">
                 Status
@@ -29,6 +32,9 @@ export default function EquipmentTable({ data }: { data: Equipment[] }) {
           <tbody className="divide-y divide-slate-800">
             {data.map((item) => (
               <tr key={item.id} className="hover:bg-slate-800/50">
+                <td className="px-2 sm:px-3 md:px-4 py-2 text-slate-300">
+                  {item.equipment_type}
+                </td>
                 <td className="px-2 sm:px-3 md:px-4 py-2 font-mono text-slate-400 text-[10px] sm:text-xs md:text-sm">
                   {item.equipment_id_number}
                 </td>

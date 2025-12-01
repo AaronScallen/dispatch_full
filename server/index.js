@@ -458,6 +458,67 @@ app.post("/api/alerts/clear", async (req, res) => {
   }
 });
 
+// === ADMIN LOGIN TRACKING ===
+app.post("/api/admin-login", async (req, res) => {
+  const { user_id, user_email, ip_address, user_agent, session_info } =
+    req.body;
+
+  try {
+    await pool.query(
+      `INSERT INTO admin_login_logs 
+       (user_id, user_email, ip_address, user_agent, session_info) 
+       VALUES ($1, $2, $3, $4, $5)`,
+      [
+        user_id,
+        user_email,
+        ip_address,
+        user_agent,
+        session_info ? JSON.stringify(session_info) : null,
+      ]
+    );
+    res
+      .status(201)
+      .json({ success: true, message: "Login logged successfully" });
+  } catch (err) {
+    console.error("Error logging admin login:", err);
+    res.status(500).send(err.message);
+  }
+});
+
+// Get admin login history (optional - for viewing logs)
+app.get("/api/admin-login-logs", async (req, res) => {
+  const { limit = 100, user_id, user_email } = req.query;
+
+  try {
+    let query = "SELECT * FROM admin_login_logs";
+    const params = [];
+    const conditions = [];
+
+    if (user_id) {
+      conditions.push(`user_id = $${params.length + 1}`);
+      params.push(user_id);
+    }
+
+    if (user_email) {
+      conditions.push(`user_email = $${params.length + 1}`);
+      params.push(user_email);
+    }
+
+    if (conditions.length > 0) {
+      query += " WHERE " + conditions.join(" AND ");
+    }
+
+    query += ` ORDER BY login_timestamp DESC LIMIT $${params.length + 1}`;
+    params.push(limit);
+
+    const result = await pool.query(query, params);
+    res.json(result.rows);
+  } catch (err) {
+    console.error("Error fetching admin login logs:", err);
+    res.status(500).send(err.message);
+  }
+});
+
 // --- START SERVER ---
 server.listen(PORT, () => {
   console.log(`-----------------------------------------------`);
