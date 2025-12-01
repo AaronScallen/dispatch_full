@@ -116,13 +116,9 @@ export default function Dashboard() {
         </h1>
       </div>
 
-      {/* LAYOUT FIX: 
-         1. h-auto on mobile (allows scrolling)
-         2. lg:h-[calc(100vh-100px)] on desktop (locks to screen size for TV)
-      */}
       <div className="p-4 lg:p-6 flex flex-col gap-6 h-auto lg:h-[calc(100vh-120px)]">
         {/* Top Row */}
-        <div className="flex flex-col lg:flex-row gap-6 lg:h-1/2 shrink-0">
+        <div className="flex flex-col lg:flex-row gap-6 lg:h-[60%] shrink-0">
           {/* Absences Container */}
           <div className="lg:w-2/3 flex flex-col min-h-[400px] lg:min-h-0">
             <div className="bg-slate-800 px-4 py-2 border-b border-slate-700 rounded-t-lg flex justify-between items-center shrink-0">
@@ -145,7 +141,7 @@ export default function Dashboard() {
         </div>
 
         {/* Bottom Row */}
-        <div className="flex flex-col lg:flex-row gap-6 lg:h-1/2 pb-10 lg:pb-0 shrink-0">
+        <div className="flex flex-col lg:flex-row gap-6 lg:h-[40%] pb-10 lg:pb-0 shrink-0">
           <div className="lg:w-2/3 min-h-[400px] lg:min-h-0">
             <EquipmentTable data={equipment} />
           </div>
@@ -163,6 +159,11 @@ export default function Dashboard() {
         >
           Admin
         </Link>
+      </div>
+
+      {/* Created By Credit */}
+      <div className="fixed bottom-2 left-2 opacity-40">
+        <p className="text-xs text-slate-500">Created By Cpl Scallen</p>
       </div>
     </main>
   );

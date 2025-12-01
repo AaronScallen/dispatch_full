@@ -9,8 +9,8 @@ export default function SignInPage() {
           <Image
             src="/pdpatch.png"
             alt="PD Patch"
-            width={400}
-            height={400}
+            width={200}
+            height={150}
             className="w-full h-auto"
             priority
           />
