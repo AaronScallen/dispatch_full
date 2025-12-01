@@ -9,6 +9,7 @@ This directory contains database migrations for the dispatch system.
 Adds user tracking capabilities to all tables in the dispatch system.
 
 **What it does:**
+
 - Adds `created_by_email` and `created_by_name` columns to track who created each record
 - Adds `updated_by_email` and `updated_by_name` columns to track who last updated each record
 - Adds `created_at` and `updated_at` timestamp columns
@@ -20,6 +21,7 @@ Adds user tracking capabilities to all tables in the dispatch system.
 Creates a table to track admin user logins for security auditing.
 
 **What it does:**
+
 - Creates `admin_login_logs` table
 - Adds indexes for efficient querying
 - Tracks user ID, email, timestamp, IP address, user agent, and session info

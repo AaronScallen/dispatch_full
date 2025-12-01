@@ -16,17 +16,17 @@ async function runMigration() {
   try {
     // Get migration file from command line args or use default
     const migrationFile = process.argv[2] || "add_user_tracking.sql";
-    
+
     console.log("🔄 Starting migration...");
     console.log(`📁 Database: ${process.env.DB_NAME || "dispatch_db"}`);
     console.log(`📄 Migration file: ${migrationFile}`);
 
     const sqlFile = path.join(__dirname, migrationFile);
-    
+
     if (!fs.existsSync(sqlFile)) {
       throw new Error(`Migration file not found: ${sqlFile}`);
     }
-    
+
     const sql = fs.readFileSync(sqlFile, "utf8");
 
     await pool.query(sql);
