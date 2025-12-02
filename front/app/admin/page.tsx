@@ -14,6 +14,16 @@ const API = `${BACKEND_URL}/api`;
 // Initialize socket connection
 const socket = io(BACKEND_URL);
 
+// --- TIMEZONE FIX HELPER ---
+// This ensures the date displayed matches the calendar date stored in the DB,
+// ignoring the browser's local timezone shift.
+const formatDate = (dateString: string | Date) => {
+  const date = new Date(dateString);
+  const userTimezoneOffset = date.getTimezoneOffset() * 60000;
+  const adjustedDate = new Date(date.getTime() + userTimezoneOffset);
+  return adjustedDate.toLocaleDateString();
+};
+
 export default function Admin() {
   // --- AUTH STATE ---
   const user = useUser();
@@ -23,6 +33,14 @@ export default function Admin() {
   const [activeTab, setActiveTab] = useState("absences");
   const [statusMsg, setStatusMsg] = useState("");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // --- MODAL STATE ---
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [confirmModalConfig, setConfirmModalConfig] = useState<{
+    title: string;
+    message: string;
+    onConfirm: () => void;
+  }>({ title: "", message: "", onConfirm: () => {} });
 
   // --- DATA STORE ---
   const [absences, setAbsences] = useState<Absence[]>([]);
@@ -171,13 +189,21 @@ export default function Admin() {
 
   const deleteItem = async (endpoint: string, id: number) => {
     if (!isConnected) return toast.error("Cannot delete while offline.");
-    if (!confirm("Are you sure you want to delete this item?")) return;
-    try {
-      await axios.delete(`${API}/${endpoint}/${id}`);
-      handleSuccess("Item Deleted");
-    } catch {
-      toast.error("Error deleting item");
-    }
+    setConfirmModalConfig({
+      title: "Confirm Delete",
+      message:
+        "Are you sure you want to delete this item? This action cannot be undone.",
+      onConfirm: async () => {
+        try {
+          await axios.delete(`${API}/${endpoint}/${id}`);
+          handleSuccess("Item Deleted");
+        } catch {
+          toast.error("Error deleting item");
+        }
+        setShowConfirmModal(false);
+      },
+    });
+    setShowConfirmModal(true);
   };
 
   // --- SUBMIT HANDLERS ---
@@ -356,18 +382,52 @@ export default function Admin() {
 
   const clearAllAlerts = async () => {
     if (!isConnected) return;
-    if (!confirm("Clear ALL active alerts?")) return;
-    try {
-      await axios.post(`${API}/alerts/clear`);
-      handleSuccess("All Alerts Cleared");
-    } catch {
-      toast.error("Error clearing alerts");
-    }
+    setConfirmModalConfig({
+      title: "Clear All Alerts",
+      message:
+        "Are you sure you want to clear ALL active alerts? This action cannot be undone.",
+      onConfirm: async () => {
+        try {
+          await axios.post(`${API}/alerts/clear`);
+          handleSuccess("All Alerts Cleared");
+        } catch {
+          toast.error("Error clearing alerts");
+        }
+        setShowConfirmModal(false);
+      },
+    });
+    setShowConfirmModal(true);
   };
 
   // --- RENDER ---
   return (
     <div className="min-h-screen bg-gray-100 pb-20 font-sans overflow-y-auto relative">
+      {/* CONFIRMATION MODAL */}
+      {showConfirmModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6 animate-in fade-in zoom-in duration-200">
+            <h2 className="text-xl font-bold text-gray-900 mb-3">
+              {confirmModalConfig.title}
+            </h2>
+            <p className="text-gray-700 mb-6">{confirmModalConfig.message}</p>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setShowConfirmModal(false)}
+                className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 font-semibold transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmModalConfig.onConfirm}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-semibold transition-colors"
+              >
+                Confirm
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <Toaster
         position="top-center"
         toastOptions={{
@@ -595,7 +655,7 @@ export default function Admin() {
                       </span>
                     </p>
                     <p className="text-xs text-gray-500 uppercase">
-                      {new Date(item.absence_date).toLocaleDateString()}{" "}
+                      {formatDate(item.absence_date)}{" "}
                       {item.covering_badge_number &&
                         `(Cover: ${item.covering_badge_number})`}
                     </p>
@@ -892,7 +952,7 @@ export default function Admin() {
                         {item.title}
                       </p>
                       <span className="text-xs text-gray-400 whitespace-nowrap">
-                        {new Date(item.notice_date).toLocaleDateString()}
+                        {formatDate(item.notice_date)}
                       </span>
                     </div>
                     <p className="text-sm text-gray-600 line-clamp-2">

@@ -1,4 +1,72 @@
+"use client";
+
 import { Notice } from "../types";
+import { useEffect, useRef, useState } from "react";
+
+// --- TIMEZONE FIX HELPER ---
+// This ensures the date displayed matches the calendar date stored in the DB,
+// ignoring the browser's local timezone shift.
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
+  const userTimezoneOffset = date.getTimezoneOffset() * 60000;
+  const adjustedDate = new Date(date.getTime() + userTimezoneOffset);
+  return adjustedDate.toLocaleDateString();
+};
+
+function NoticeText({ text }: { text: string }) {
+  const textRef = useRef<HTMLParagraphElement>(null);
+  const [isOverflowing, setIsOverflowing] = useState(false);
+
+  useEffect(() => {
+    const checkOverflow = () => {
+      if (textRef.current) {
+        const isTextOverflowing =
+          textRef.current.scrollHeight > textRef.current.clientHeight;
+        setIsOverflowing(isTextOverflowing);
+      }
+    };
+
+    checkOverflow();
+    window.addEventListener("resize", checkOverflow);
+    return () => window.removeEventListener("resize", checkOverflow);
+  }, [text]);
+
+  return (
+    <div className="relative overflow-hidden">
+      <p
+        ref={textRef}
+        className={`text-[10px] sm:text-xs md:text-sm text-slate-300 ${
+          isOverflowing ? "animate-subtle-scroll" : ""
+        }`}
+        style={{
+          maxHeight: "4.5em",
+          lineHeight: "1.5em",
+        }}
+      >
+        {text}
+      </p>
+      <style jsx>{`
+        @keyframes subtle-scroll {
+          0%,
+          20% {
+            transform: translateY(0);
+          }
+          45%,
+          65% {
+            transform: translateY(calc(-100% + 4.5em));
+          }
+          90%,
+          100% {
+            transform: translateY(0);
+          }
+        }
+        .animate-subtle-scroll {
+          animation: subtle-scroll 8s ease-in-out infinite;
+        }
+      `}</style>
+    </div>
+  );
+}
 
 export default function NoticeBoard({ data }: { data: Notice[] }) {
   return (
@@ -17,12 +85,10 @@ export default function NoticeBoard({ data }: { data: Notice[] }) {
                 {notice.title}
               </h3>
               <span className="text-[10px] sm:text-xs text-slate-500 whitespace-nowrap ml-2">
-                {new Date(notice.notice_date).toLocaleDateString()}
+                {formatDate(notice.notice_date)}
               </span>
             </div>
-            <p className="text-[10px] sm:text-xs md:text-sm text-slate-300">
-              {notice.text_content}
-            </p>
+            <NoticeText text={notice.text_content} />
           </div>
         ))}
       </div>
