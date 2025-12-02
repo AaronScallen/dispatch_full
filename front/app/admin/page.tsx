@@ -404,22 +404,24 @@ export default function Admin() {
     <div className="min-h-screen bg-gray-100 pb-20 font-sans overflow-y-auto relative">
       {/* CONFIRMATION MODAL */}
       {showConfirmModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6 animate-in fade-in zoom-in duration-200">
-            <h2 className="text-xl font-bold text-gray-900 mb-3">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-3 sm:p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-4 sm:p-5 md:p-6 animate-in fade-in zoom-in duration-200">
+            <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 sm:mb-3">
               {confirmModalConfig.title}
             </h2>
-            <p className="text-gray-700 mb-6">{confirmModalConfig.message}</p>
-            <div className="flex gap-3 justify-end">
+            <p className="text-sm sm:text-base text-gray-700 mb-4 sm:mb-5 md:mb-6">
+              {confirmModalConfig.message}
+            </p>
+            <div className="flex gap-2 sm:gap-3 justify-end">
               <button
                 onClick={() => setShowConfirmModal(false)}
-                className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 font-semibold transition-colors"
+                className="px-3 sm:px-4 py-1.5 sm:py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 font-semibold transition-colors text-sm sm:text-base"
               >
                 Cancel
               </button>
               <button
                 onClick={confirmModalConfig.onConfirm}
-                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-semibold transition-colors"
+                className="px-3 sm:px-4 py-1.5 sm:py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-semibold transition-colors text-sm sm:text-base"
               >
                 Confirm
               </button>
@@ -453,18 +455,18 @@ export default function Admin() {
       />
       {/* OFFLINE WARNING BANNER */}
       {!isConnected && (
-        <div className="bg-red-600 text-white text-center p-3 font-bold fixed top-0 left-0 right-0 z-50 shadow-lg animate-pulse">
+        <div className="bg-red-600 text-white text-center p-2 sm:p-3 font-bold fixed top-0 left-0 right-0 z-50 shadow-lg animate-pulse text-xs sm:text-sm md:text-base">
           ⚠️ SYSTEM OFFLINE - DO NOT SUBMIT CHANGES - ATTEMPTING RECONNECT...
         </div>
       )}
 
       {/* HEADER */}
       <div
-        className={`bg-slate-900 text-white p-4 sticky z-40 shadow-md flex justify-between items-center ${
+        className={`bg-slate-900 text-white p-2 sm:p-3 md:p-4 sticky z-40 shadow-md flex justify-between items-center ${
           !isConnected ? "top-12" : "top-0"
         }`}
       >
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
           {/* Hamburger Button - Mobile Only */}
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -487,16 +489,18 @@ export default function Admin() {
               }`}
             ></span>
           </button>
-          <h1 className="font-bold text-lg md:text-xl">Admin Entry</h1>
+          <h1 className="font-bold text-base sm:text-lg md:text-xl lg:text-2xl">
+            Admin Entry
+          </h1>
         </div>
-        <div className="flex items-center gap-3">
-          <div className="text-xs uppercase tracking-wider text-slate-400 bg-slate-800 px-2 py-1 rounded hidden sm:block">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <div className="text-[10px] sm:text-xs uppercase tracking-wider text-slate-400 bg-slate-800 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded hidden sm:block">
             {activeTab} Manager
           </div>
           {user && (
             <button
               onClick={() => user.signOut()}
-              className="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded text-sm font-semibold transition-colors"
+              className="bg-red-600 hover:bg-red-700 text-white px-2 sm:px-3 py-1 sm:py-1.5 rounded text-xs sm:text-sm font-semibold transition-colors"
             >
               Logout
             </button>
@@ -507,7 +511,7 @@ export default function Admin() {
       {/* STATUS TOAST */}
       {statusMsg && isConnected && (
         <div className="fixed top-16 left-0 right-0 flex justify-center z-40 pointer-events-none">
-          <div className="bg-green-600 text-white px-6 py-2 rounded-full font-bold shadow-xl animate-bounce">
+          <div className="bg-green-600 text-white px-4 sm:px-5 md:px-6 py-1.5 sm:py-2 rounded-full font-bold shadow-xl animate-bounce text-xs sm:text-sm md:text-base">
             {statusMsg}
           </div>
         </div>
@@ -532,7 +536,7 @@ export default function Admin() {
                     resetForms();
                     setIsMobileMenuOpen(false);
                   }}
-                  className={`w-full py-4 px-6 text-left text-sm font-bold uppercase tracking-wider border-b border-gray-100
+                  className={`w-full py-3 sm:py-4 px-4 sm:px-6 text-left text-xs sm:text-sm font-bold uppercase tracking-wider border-b border-gray-100
                   ${
                     activeTab === tab
                       ? "text-blue-600 bg-blue-50 border-l-4 border-l-blue-600"
@@ -560,7 +564,7 @@ export default function Admin() {
               setActiveTab(tab);
               resetForms();
             }}
-            className={`flex-1 py-4 px-4 text-sm font-bold uppercase tracking-wider whitespace-nowrap
+            className={`flex-1 py-3 md:py-4 px-3 md:px-4 text-xs md:text-sm lg:text-base font-bold uppercase tracking-wider whitespace-nowrap
               ${
                 activeTab === tab
                   ? "text-blue-600 border-b-4 border-blue-600 bg-blue-50"
@@ -1073,15 +1077,15 @@ export default function Admin() {
 
       {/* USER INFO DISPLAY - BOTTOM RIGHT */}
       {user && (
-        <div className="fixed bottom-4 right-4 bg-slate-900 text-white px-4 py-2 rounded-lg shadow-lg border border-slate-700 z-50">
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-            <div className="text-xs">
+        <div className="fixed bottom-2 sm:bottom-3 md:bottom-4 right-2 sm:right-3 md:right-4 bg-slate-900 text-white px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 rounded-lg shadow-lg border border-slate-700 z-50">
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-green-500 rounded-full animate-pulse"></div>
+            <div className="text-[10px] sm:text-xs">
               <p className="font-semibold">
                 {user.displayName || user.primaryEmail || "User"}
               </p>
               {user.displayName && user.primaryEmail && (
-                <p className="text-slate-400 text-[10px]">
+                <p className="text-slate-400 text-[8px] sm:text-[10px]">
                   {user.primaryEmail}
                 </p>
               )}

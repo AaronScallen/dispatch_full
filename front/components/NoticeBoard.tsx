@@ -35,7 +35,7 @@ function NoticeText({ text }: { text: string }) {
     <div className="relative overflow-hidden">
       <p
         ref={textRef}
-        className={`text-[10px] sm:text-xs md:text-sm text-slate-300 ${
+        className={`text-[8px] sm:text-[10px] md:text-xs lg:text-sm text-slate-300 ${
           isOverflowing ? "animate-subtle-scroll" : ""
         }`}
         style={{
@@ -70,21 +70,21 @@ function NoticeText({ text }: { text: string }) {
 
 export default function NoticeBoard({ data }: { data: Notice[] }) {
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-lg p-2 sm:p-3 md:p-4 shadow-lg">
-      <h2 className="text-sm sm:text-base md:text-lg lg:text-xl font-bold text-purple-400 uppercase tracking-wide mb-2 sm:mb-3 md:mb-4">
+    <div className="bg-slate-900 border border-slate-800 rounded-lg p-2 sm:p-3 md:p-4 lg:p-5 shadow-lg">
+      <h2 className="text-xs sm:text-sm md:text-base lg:text-lg xl:text-xl font-bold text-purple-400 uppercase tracking-wide mb-1.5 sm:mb-2 md:mb-3 lg:mb-4">
         Notices
       </h2>
-      <div className="space-y-2 sm:space-y-3 md:space-y-4">
+      <div className="space-y-1.5 sm:space-y-2 md:space-y-3 lg:space-y-4">
         {data.map((notice) => (
           <div
             key={notice.id}
-            className="bg-slate-800 p-2 sm:p-2.5 md:p-3 rounded border-l-2 sm:border-l-4 border-purple-500"
+            className="bg-slate-800 p-1.5 sm:p-2 md:p-2.5 lg:p-3 rounded border-l-2 sm:border-l-3 md:border-l-4 border-purple-500"
           >
-            <div className="flex justify-between items-start mb-1">
-              <h3 className="text-white font-bold text-xs sm:text-sm md:text-base">
+            <div className="flex justify-between items-start mb-0.5 sm:mb-1">
+              <h3 className="text-white font-bold text-[10px] sm:text-xs md:text-sm lg:text-base">
                 {notice.title}
               </h3>
-              <span className="text-[10px] sm:text-xs text-slate-500 whitespace-nowrap ml-2">
+              <span className="text-[8px] sm:text-[10px] md:text-xs text-slate-500 whitespace-nowrap ml-1 sm:ml-2">
                 {formatDate(notice.notice_date)}
               </span>
             </div>

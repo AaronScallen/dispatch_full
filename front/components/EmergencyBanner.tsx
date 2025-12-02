@@ -105,22 +105,22 @@ export default function EmergencyBanner({ alerts }: { alerts: Alert[] }) {
 
   return (
     <div
-      className={`w-full ${colors.bg} animate-pulse border-b-2 sm:border-b-4 ${colors.border} shadow-2xl`}
+      className={`w-full ${colors.bg} animate-pulse border-b-2 sm:border-b-3 md:border-b-4 ${colors.border} shadow-2xl`}
     >
-      <div className="max-w-7xl mx-auto py-2 sm:py-3 md:py-4 px-2 sm:px-3 md:px-4 text-center">
+      <div className="max-w-7xl mx-auto py-1.5 sm:py-2 md:py-3 lg:py-4 px-2 sm:px-3 md:px-4 lg:px-5 text-center">
         <h1
-          className={`text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-black ${colors.text} uppercase tracking-widest`}
+          className={`text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl 2xl:text-5xl font-black ${colors.text} uppercase tracking-widest`}
         >
           {activeAlert.severity_level} ALERT
         </h1>
         <p
-          className={`text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl ${colors.text} font-bold mt-1 sm:mt-1.5 md:mt-2`}
+          className={`text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl 2xl:text-3xl ${colors.text} font-bold mt-0.5 sm:mt-1 md:mt-1.5 lg:mt-2`}
         >
           {activeAlert.title}
         </p>
         {showTimer && (
           <div
-            className={`text-sm sm:text-base md:text-lg lg:text-2xl xl:text-4xl ${colors.text} font-mono font-bold mt-1 sm:mt-1.5 md:mt-2`}
+            className={`text-xs sm:text-sm md:text-base lg:text-lg xl:text-2xl 2xl:text-4xl ${colors.text} font-mono font-bold mt-0.5 sm:mt-1 md:mt-1.5 lg:mt-2`}
           >
             ⏱️ Time Elapsed: {formatTime(elapsedTime)}
           </div>

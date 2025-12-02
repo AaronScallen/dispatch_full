@@ -105,65 +105,67 @@ export default function Dashboard() {
   const todaysAbsences = absences.filter((a) => isSameDay(a.absence_date));
 
   return (
-    <main className="min-h-screen bg-slate-950 text-white font-sans selection:bg-blue-500 selection:text-white">
+    <main className="h-screen overflow-hidden bg-slate-950 text-white font-sans selection:bg-blue-500 selection:text-white flex flex-col">
       <ConnectionStatus isConnected={isConnected} />
       <EmergencyBanner alerts={alerts} />
 
       {/* Header */}
-      <div className="text-center py-4 lg:py-5">
-        <h1 className="text-2xl sm:text-3xl lg:text-3xl xl:text-4xl text-blue-400 uppercase tracking-wider font-mono font-extrabold">
+      <div className="text-center py-[clamp(0.5rem,1vh,2rem)]">
+        <h1 className="text-[clamp(1.25rem,3vw,4rem)] text-blue-400 uppercase tracking-wider font-mono font-extrabold">
           NISD Police Operations
         </h1>
       </div>
 
-      <div className="p-4 lg:p-6 flex flex-col gap-6 h-auto lg:h-[calc(100vh-120px)]">
+      <div className="flex-1 p-[clamp(0.5rem,1.5vw,2rem)] flex flex-col gap-[clamp(0.75rem,1.5vh,2rem)] overflow-hidden">
         {/* Top Row */}
-        <div className="flex flex-col lg:flex-row gap-6 lg:h-[60%] shrink-0">
+        <div className="flex flex-col lg:flex-row gap-[clamp(0.75rem,1.5vh,2rem)] flex-3 min-h-0">
           {/* Absences Container */}
-          <div className="lg:w-2/3 flex flex-col min-h-[400px] lg:min-h-0">
-            <div className="bg-slate-800 px-4 py-2 border-b border-slate-700 rounded-t-lg flex justify-between items-center shrink-0">
-              <h2 className="text-xl font-bold text-blue-400 uppercase tracking-wide">
+          <div className="lg:flex-2 flex flex-col min-h-0 overflow-hidden">
+            <div className="bg-slate-800 px-[clamp(0.5rem,1.5vw,1.5rem)] py-[clamp(0.375rem,0.8vh,1rem)] border-b border-slate-700 rounded-t-lg flex justify-between items-center shrink-0">
+              <h2 className="text-[clamp(0.875rem,1.5vw,1.5rem)] font-bold text-blue-400 uppercase tracking-wide">
                 Officer Absences (Today)
               </h2>
-              <span className="bg-slate-900 text-slate-400 text-xs px-2 py-1 rounded">
+              <span className="bg-slate-900 text-slate-400 text-[clamp(0.625rem,1vw,0.875rem)] px-[clamp(0.375rem,1vw,0.75rem)] py-[clamp(0.25rem,0.5vh,0.5rem)] rounded">
                 {todaysAbsences.length} Total
               </span>
             </div>
-            <div className="flex-1 overflow-hidden h-full">
+            <div className="flex-1 overflow-hidden">
               <AbsenceTable data={todaysAbsences} />
             </div>
           </div>
 
           {/* On Call Container */}
-          <div className="lg:w-1/3 overflow-y-auto min-h-[300px] lg:min-h-0 bg-slate-900 rounded-lg border border-slate-800">
+          <div className="lg:flex-1 overflow-y-auto min-h-0 bg-slate-900 rounded-lg border border-slate-800">
             <OnCallList data={onCall} />
           </div>
         </div>
 
         {/* Bottom Row */}
-        <div className="flex flex-col lg:flex-row gap-6 lg:h-[40%] pb-10 lg:pb-0 shrink-0">
-          <div className="lg:w-2/3 min-h-[400px] lg:min-h-0">
+        <div className="flex flex-col lg:flex-row gap-[clamp(0.75rem,1.5vh,2rem)] flex-2 min-h-0 overflow-hidden">
+          <div className="lg:flex-2 min-h-0 overflow-hidden">
             <EquipmentTable data={equipment} />
           </div>
-          <div className="lg:w-1/3 overflow-y-auto min-h-[300px] lg:min-h-0 bg-slate-900 rounded-lg border border-slate-800">
+          <div className="lg:flex-1 overflow-y-auto min-h-0 bg-slate-900 rounded-lg border border-slate-800">
             <NoticeBoard data={notices} />
           </div>
         </div>
       </div>
 
       {/* Admin Link */}
-      <div className="fixed bottom-2 right-2 opacity-50 hover:opacity-100 transition-opacity">
+      <div className="absolute bottom-[clamp(0.5rem,1vh,1rem)] right-[clamp(0.5rem,1vh,1rem)] opacity-50 hover:opacity-100 transition-opacity">
         <Link
           href="/admin"
-          className="text-xs text-slate-500 hover:text-slate-300"
+          className="text-[clamp(0.625rem,1vw,0.875rem)] text-slate-500 hover:text-slate-300"
         >
           Admin
         </Link>
       </div>
 
       {/* Created By Credit */}
-      <div className="fixed bottom-2 left-2 opacity-40">
-        <p className="text-xs text-slate-500">Created By Cpl Scallen</p>
+      <div className="absolute bottom-[clamp(0.5rem,1vh,1rem)] left-[clamp(0.5rem,1vh,1rem)] opacity-40">
+        <p className="text-[clamp(0.625rem,1vw,0.875rem)] text-slate-500">
+          Created By Cpl Scallen
+        </p>
       </div>
     </main>
   );
