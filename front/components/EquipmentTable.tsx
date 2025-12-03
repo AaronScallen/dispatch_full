@@ -78,8 +78,10 @@ export default function EquipmentTable({ data }: { data: Equipment[] }) {
                   <span
                     className={`px-1 sm:px-1.5 md:px-2 py-0.5 sm:py-0.5 md:py-1 rounded text-[8px] sm:text-[10px] md:text-xs font-bold uppercase
                     ${
-                      item.status === "Broken"
+                      item.status === "Down"
                         ? "bg-red-900 text-red-200"
+                        : item.status === "Pending"
+                        ? "bg-yellow-500 text-yellow-950"
                         : item.status === "Repairing"
                         ? "bg-yellow-900 text-yellow-200"
                         : "bg-green-900 text-green-200"
@@ -112,8 +114,10 @@ export default function EquipmentTable({ data }: { data: Equipment[] }) {
                     <span
                       className={`px-1 sm:px-1.5 md:px-2 py-0.5 sm:py-0.5 md:py-1 rounded text-[8px] sm:text-[10px] md:text-xs font-bold uppercase
                       ${
-                        item.status === "Broken"
+                        item.status === "Down"
                           ? "bg-red-900 text-red-200"
+                          : item.status === "Pending"
+                          ? "bg-yellow-500 text-yellow-950"
                           : item.status === "Repairing"
                           ? "bg-yellow-900 text-yellow-200"
                           : "bg-green-900 text-green-200"

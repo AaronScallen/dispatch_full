@@ -64,7 +64,7 @@ export default function Admin() {
   const [eqType, setEqType] = useState("");
   const [eqID, setEqID] = useState("");
   const [eqTitle, setEqTitle] = useState("");
-  const [eqStatus, setEqStatus] = useState("Broken");
+  const [eqStatus, setEqStatus] = useState("Down");
   const [eqNotes, setEqNotes] = useState("");
 
   // On Call
@@ -176,7 +176,7 @@ export default function Admin() {
     setEqType("");
     setEqID("");
     setEqTitle("");
-    setEqStatus("Broken");
+    setEqStatus("Down");
     setEqNotes("");
     setOcDept("");
     setOcName("");
@@ -725,7 +725,8 @@ export default function Admin() {
                 value={eqStatus}
                 onChange={(e) => setEqStatus(e.target.value)}
               >
-                <option value="Broken">Broken</option>
+                <option value="Down">Down</option>
+                <option value="Pending">Pending</option>
                 <option value="Repairing">Repairing</option>
                 <option value="Fixed">Fixed</option>
               </select>
@@ -765,12 +766,14 @@ export default function Admin() {
                   <div className="flex-1">
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-1">
                       <span
-                        className={`text-xs font-bold px-2 py-1 rounded text-white w-fit ${
-                          item.status === "Broken"
-                            ? "bg-red-600"
+                        className={`text-xs font-bold px-2 py-1 rounded w-fit ${
+                          item.status === "Down"
+                            ? "bg-red-600 text-white"
+                            : item.status === "Pending"
+                            ? "bg-yellow-500 text-yellow-950"
                             : item.status === "Repairing"
-                            ? "bg-yellow-500"
-                            : "bg-green-600"
+                            ? "bg-yellow-500 text-white"
+                            : "bg-green-600 text-white"
                         }`}
                       >
                         {item.status}
