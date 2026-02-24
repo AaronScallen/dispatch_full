@@ -14,7 +14,7 @@ const API = `${BACKEND_URL}/api`;
 // Initialize socket connection
 const socket = io(BACKEND_URL, {
   withCredentials: true,
-  transports: ["websocket", "polling"],
+  transports: ["polling", "websocket"],
 });
 
 // --- TIMEZONE FIX HELPER ---

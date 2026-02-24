@@ -19,7 +19,7 @@ const BACKEND_URL =
   process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5000";
 const socket = io(BACKEND_URL, {
   withCredentials: true,
-  transports: ["websocket", "polling"],
+  transports: ["polling", "websocket"],
 });
 
 // --- HELPER TO CHECK DATES ---
