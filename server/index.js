@@ -13,14 +13,22 @@ const PORT = process.env.PORT || 5000;
 
 // --- MIDDLEWARE ---
 // Allow multiple origins for CORS (localhost for dev + production URL)
-const allowedOrigins = process.env.FRONTEND_URL
-  ? [process.env.FRONTEND_URL, "http://localhost:3000", "http://localhost:3001"]
-  : "*";
+const allowedOrigins = [
+  "https://dispatch-full.vercel.app",
+  "http://localhost:3000",
+  "http://localhost:3001",
+];
+
+// Add additional frontend URLs from env if present
+if (process.env.FRONTEND_URL) {
+  allowedOrigins.push(process.env.FRONTEND_URL);
+}
 
 app.use(
   cors({
     origin: allowedOrigins,
-  })
+    credentials: true,
+  }),
 ); // Allow requests from the Frontend
 app.use(bodyParser.json()); // Parse JSON data from forms
 
@@ -53,8 +61,9 @@ pool.connect((err, client, release) => {
 // --- SOCKET.IO SETUP ---
 const io = new Server(server, {
   cors: {
-    origin: "*", // Allow any client (TV, Phone, Laptop) to connect
+    origin: allowedOrigins, // Use the same allowed origins as Express
     methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true,
   },
 });
 
@@ -74,7 +83,7 @@ const broadcastUpdate = async (table, orderBy, eventName) => {
     // Special logic for alerts: Dashboard usually only needs active ones
     if (table === "emergency_alerts") {
       const activeResult = await pool.query(
-        `SELECT * FROM emergency_alerts WHERE active = true ORDER BY id DESC`
+        `SELECT * FROM emergency_alerts WHERE active = true ORDER BY id DESC`,
       );
       io.emit("update_alerts", activeResult.rows);
       return;
@@ -99,7 +108,7 @@ app.get("/", (req, res) => {
 app.get("/api/absences", async (req, res) => {
   try {
     const result = await pool.query(
-      "SELECT * FROM absences ORDER BY absence_date DESC"
+      "SELECT * FROM absences ORDER BY absence_date DESC",
     );
     res.json(result.rows);
   } catch (err) {
@@ -128,7 +137,7 @@ app.post("/api/absences", async (req, res) => {
         notes,
         created_by_email,
         created_by_name,
-      ]
+      ],
     );
     await broadcastUpdate("absences", "absence_date DESC", "update_absences");
     res.sendStatus(201);
@@ -159,7 +168,7 @@ app.put("/api/absences/:id", async (req, res) => {
         updated_by_email,
         updated_by_name,
         req.params.id,
-      ]
+      ],
     );
     await broadcastUpdate("absences", "absence_date DESC", "update_absences");
     res.sendStatus(200);
@@ -182,7 +191,7 @@ app.delete("/api/absences/:id", async (req, res) => {
 app.get("/api/equipment", async (req, res) => {
   try {
     const result = await pool.query(
-      "SELECT * FROM downed_equipment ORDER BY id DESC"
+      "SELECT * FROM downed_equipment ORDER BY id DESC",
     );
     res.json(result.rows);
   } catch (err) {
@@ -211,7 +220,7 @@ app.post("/api/equipment", async (req, res) => {
         notes,
         created_by_email,
         created_by_name,
-      ]
+      ],
     );
     await broadcastUpdate("downed_equipment", "id DESC", "update_equipment");
     res.sendStatus(201);
@@ -242,7 +251,7 @@ app.put("/api/equipment/:id", async (req, res) => {
         updated_by_email,
         updated_by_name,
         req.params.id,
-      ]
+      ],
     );
     await broadcastUpdate("downed_equipment", "id DESC", "update_equipment");
     res.sendStatus(200);
@@ -267,7 +276,7 @@ app.delete("/api/equipment/:id", async (req, res) => {
 app.get("/api/oncall", async (req, res) => {
   try {
     const result = await pool.query(
-      "SELECT * FROM on_call_staff ORDER BY id ASC"
+      "SELECT * FROM on_call_staff ORDER BY id ASC",
     );
     res.json(result.rows);
   } catch (err) {
@@ -292,7 +301,7 @@ app.post("/api/oncall", async (req, res) => {
         phone_number,
         created_by_email,
         created_by_name,
-      ]
+      ],
     );
     await broadcastUpdate("on_call_staff", "id ASC", "update_oncall");
     res.sendStatus(201);
@@ -319,7 +328,7 @@ app.put("/api/oncall/:id", async (req, res) => {
         updated_by_email,
         updated_by_name,
         req.params.id,
-      ]
+      ],
     );
     await broadcastUpdate("on_call_staff", "id ASC", "update_oncall");
     res.sendStatus(200);
@@ -342,7 +351,7 @@ app.delete("/api/oncall/:id", async (req, res) => {
 app.get("/api/notices", async (req, res) => {
   try {
     const result = await pool.query(
-      "SELECT * FROM notices ORDER BY notice_date DESC"
+      "SELECT * FROM notices ORDER BY notice_date DESC",
     );
     res.json(result.rows);
   } catch (err) {
@@ -361,7 +370,7 @@ app.post("/api/notices", async (req, res) => {
   try {
     await pool.query(
       "INSERT INTO notices (notice_date, title, text_content, created_by_email, created_by_name) VALUES ($1, $2, $3, $4, $5)",
-      [notice_date, title, text_content, created_by_email, created_by_name]
+      [notice_date, title, text_content, created_by_email, created_by_name],
     );
     await broadcastUpdate("notices", "notice_date DESC", "update_notices");
     res.sendStatus(201);
@@ -388,7 +397,7 @@ app.put("/api/notices/:id", async (req, res) => {
         updated_by_email,
         updated_by_name,
         req.params.id,
-      ]
+      ],
     );
     await broadcastUpdate("notices", "notice_date DESC", "update_notices");
     res.sendStatus(200);
@@ -412,7 +421,7 @@ app.get("/api/alerts", async (req, res) => {
   try {
     // Get active alerts for display
     const result = await pool.query(
-      "SELECT * FROM emergency_alerts WHERE active = true ORDER BY id DESC"
+      "SELECT * FROM emergency_alerts WHERE active = true ORDER BY id DESC",
     );
     res.json(result.rows);
   } catch (err) {
@@ -425,7 +434,7 @@ app.post("/api/alerts", async (req, res) => {
   try {
     await pool.query(
       "INSERT INTO emergency_alerts (severity_level, title, active, created_by_email, created_by_name) VALUES ($1, $2, true, $3, $4)",
-      [severity_level, title, created_by_email, created_by_name]
+      [severity_level, title, created_by_email, created_by_name],
     );
     await broadcastUpdate("emergency_alerts", "id DESC", "update_alerts");
     res.sendStatus(201);
@@ -439,7 +448,7 @@ app.put("/api/alerts/:id/dismiss", async (req, res) => {
   try {
     await pool.query(
       "UPDATE emergency_alerts SET active = false, updated_by_email=$1, updated_by_name=$2 WHERE id=$3",
-      [updated_by_email, updated_by_name, req.params.id]
+      [updated_by_email, updated_by_name, req.params.id],
     );
     await broadcastUpdate("emergency_alerts", "id DESC", "update_alerts");
     res.sendStatus(200);
@@ -474,7 +483,7 @@ app.post("/api/admin-login", async (req, res) => {
         ip_address,
         user_agent,
         session_info ? JSON.stringify(session_info) : null,
-      ]
+      ],
     );
     res
       .status(201)

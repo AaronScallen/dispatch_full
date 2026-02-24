@@ -12,7 +12,10 @@ const BACKEND_URL =
 const API = `${BACKEND_URL}/api`;
 
 // Initialize socket connection
-const socket = io(BACKEND_URL);
+const socket = io(BACKEND_URL, {
+  withCredentials: true,
+  transports: ["websocket", "polling"],
+});
 
 // --- TIMEZONE FIX HELPER ---
 // This ensures the date displayed matches the calendar date stored in the DB,
@@ -545,7 +548,7 @@ export default function Admin() {
                 >
                   {tab}
                 </button>
-              )
+              ),
             )}
           </div>
         </div>
@@ -770,10 +773,10 @@ export default function Admin() {
                           item.status === "Down"
                             ? "bg-red-600 text-white"
                             : item.status === "Pending"
-                            ? "bg-yellow-500 text-yellow-950"
-                            : item.status === "Repairing"
-                            ? "bg-yellow-500 text-white"
-                            : "bg-green-600 text-white"
+                              ? "bg-yellow-500 text-yellow-950"
+                              : item.status === "Repairing"
+                                ? "bg-yellow-500 text-white"
+                                : "bg-green-600 text-white"
                         }`}
                       >
                         {item.status}

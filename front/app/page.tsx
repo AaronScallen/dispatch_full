@@ -17,7 +17,10 @@ import ConnectionStatus from "../components/ConnectionStatus";
 
 const BACKEND_URL =
   process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5000";
-const socket = io(BACKEND_URL);
+const socket = io(BACKEND_URL, {
+  withCredentials: true,
+  transports: ["websocket", "polling"],
+});
 
 // --- HELPER TO CHECK DATES ---
 const isSameDay = (dateString: string) => {
