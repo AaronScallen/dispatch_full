@@ -49,13 +49,30 @@ if (process.env.FRONTEND_URL) {
   allowedOrigins.push(process.env.FRONTEND_URL);
 }
 
+// Helper function to check if origin is allowed
+function isOriginAllowed(origin) {
+  if (!origin) return true; // Allow requests with no origin
+
+  // Check if origin is in the explicit allowed list
+  if (allowedOrigins.includes(origin)) return true;
+
+  // Allow any Vercel deployment URL (preview deployments)
+  // Matches patterns like: https://dispatch-full-*.vercel.app
+  if (
+    /^https:\/\/dispatch-full(-[a-z0-9]+-[a-z0-9-]+)?\.vercel\.app$/.test(
+      origin,
+    )
+  ) {
+    return true;
+  }
+
+  return false;
+}
+
 // CORS configuration with function to handle dynamic origins
 const corsOptions = {
   origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
-
-    if (allowedOrigins.indexOf(origin) !== -1) {
+    if (isOriginAllowed(origin)) {
       callback(null, true);
     } else {
       console.log(`CORS blocked origin: ${origin}`);
@@ -85,7 +102,7 @@ app.use(bodyParser.json()); // Parse JSON data from forms
 app.use((req, res, next) => {
   // Set CORS headers explicitly for Socket.IO handshake
   const origin = req.headers.origin;
-  if (origin && allowedOrigins.includes(origin)) {
+  if (origin && isOriginAllowed(origin)) {
     res.setHeader("Access-Control-Allow-Origin", origin);
     res.setHeader("Access-Control-Allow-Credentials", "true");
     res.setHeader(
@@ -164,8 +181,7 @@ pool.connect((err, client, release) => {
 const io = new Server(server, {
   cors: {
     origin: function (origin, callback) {
-      if (!origin) return callback(null, true);
-      if (allowedOrigins.indexOf(origin) !== -1) {
+      if (isOriginAllowed(origin)) {
         callback(null, true);
       } else {
         console.log(`Socket.IO blocked origin: ${origin}`);
