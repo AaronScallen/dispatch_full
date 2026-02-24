@@ -33,6 +33,9 @@ const app = express();
 const server = http.createServer(app);
 const PORT = process.env.PORT || 5000;
 
+// Trust proxy (important for Render.com which uses a reverse proxy)
+app.set("trust proxy", 1);
+
 // --- MIDDLEWARE ---
 // Allow multiple origins for CORS (localhost for dev + production URL)
 const allowedOrigins = [
@@ -46,12 +49,26 @@ if (process.env.FRONTEND_URL) {
   allowedOrigins.push(process.env.FRONTEND_URL);
 }
 
-app.use(
-  cors({
-    origin: allowedOrigins,
-    credentials: true,
-  }),
-); // Allow requests from the Frontend
+// CORS configuration with function to handle dynamic origins
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      console.log(`CORS blocked origin: ${origin}`);
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+};
+
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions)); // Enable pre-flight for all routes
 app.use(bodyParser.json()); // Parse JSON data from forms
 
 // Security headers
@@ -117,8 +134,15 @@ pool.connect((err, client, release) => {
 // --- SOCKET.IO SETUP ---
 const io = new Server(server, {
   cors: {
-    origin: allowedOrigins, // Use the same allowed origins as Express
-    methods: ["GET", "POST", "PUT", "DELETE"],
+    origin: function (origin, callback) {
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.indexOf(origin) !== -1) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     credentials: true,
   },
   transports: ["polling", "websocket"],
@@ -630,6 +654,7 @@ server.listen(PORT, () => {
   console.log(`🚀 DISPATCH SERVER RUNNING`);
   console.log(`   Environment: ${NODE_ENV}`);
   console.log(`   Port: ${PORT}`);
+  console.log(`   Allowed Origins: ${allowedOrigins.join(", ")}`);
   console.log(`   Time: ${new Date().toISOString()}`);
   console.log(`-----------------------------------------------`);
 });
@@ -660,3 +685,18 @@ const gracefulShutdown = async (signal) => {
 
 process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
 process.on("SIGINT", () => gracefulShutdown("SIGINT"));
+
+// Handle uncaught exceptions
+process.on("uncaughtException", (err) => {
+  console.error("💥 UNCAUGHT EXCEPTION! Shutting down...");
+  console.error(err.name, err.message);
+  console.error(err.stack);
+  process.exit(1);
+});
+
+// Handle unhandled promise rejections
+process.on("unhandledRejection", (err) => {
+  console.error("💥 UNHANDLED REJECTION! Shutting down...");
+  console.error(err);
+  process.exit(1);
+});
