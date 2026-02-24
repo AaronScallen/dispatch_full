@@ -121,10 +121,11 @@ export default function Admin() {
               primary_email_verified: user.primaryEmailVerified,
             },
           });
-          console.log("Admin login tracked successfully");
         } catch (err) {
-          console.error("Failed to track admin login:", err);
-          // Don't block the app if tracking fails
+          // Silently fail - don't block the app if tracking fails
+          if (process.env.NODE_ENV === "development") {
+            console.error("Failed to track admin login:", err);
+          }
         }
       }
     };
@@ -141,14 +142,12 @@ export default function Admin() {
 
     // Socket Listeners for Connection Health
     socket.on("connect", () => {
-      console.log("Connected to Admin Socket");
       setIsConnected(true);
       setStatusMsg("Server Online");
       setTimeout(() => setStatusMsg(""), 2000);
     });
 
     socket.on("disconnect", () => {
-      console.log("Lost connection");
       setIsConnected(false);
     });
 

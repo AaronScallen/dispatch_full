@@ -6,6 +6,28 @@ const { Pool } = require("pg");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 
+// --- ENVIRONMENT VALIDATION ---
+const NODE_ENV = process.env.NODE_ENV || "development";
+const isDevelopment = NODE_ENV === "development";
+const isProduction = NODE_ENV === "production";
+
+// Validate required environment variables in production
+if (isProduction) {
+  const requiredEnvVars = ["DB_HOST", "DB_USER", "DB_NAME", "DB_PASSWORD"];
+  const missingEnvVars = requiredEnvVars.filter(
+    (varName) => !process.env[varName],
+  );
+
+  if (missingEnvVars.length > 0) {
+    console.error("❌ Missing required environment variables:");
+    missingEnvVars.forEach((varName) => console.error(`   - ${varName}`));
+    console.error(
+      "\nPlease set these variables in your deployment environment.",
+    );
+    process.exit(1);
+  }
+}
+
 // --- CONFIGURATION ---
 const app = express();
 const server = http.createServer(app);
@@ -32,15 +54,41 @@ app.use(
 ); // Allow requests from the Frontend
 app.use(bodyParser.json()); // Parse JSON data from forms
 
+// Security headers
+app.use((req, res, next) => {
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("X-Frame-Options", "DENY");
+  res.setHeader("X-XSS-Protection", "1; mode=block");
+  next();
+});
+
+// Request logging for production monitoring
+if (isProduction) {
+  app.use((req, res, next) => {
+    const timestamp = new Date().toISOString();
+    console.log(`[${timestamp}] ${req.method} ${req.path}`);
+    next();
+  });
+}
+
 // --- DATABASE CONNECTION ---
-const isProduction = process.env.DB_HOST && process.env.DB_HOST !== "localhost";
+const dbIsProduction =
+  process.env.DB_HOST && process.env.DB_HOST !== "localhost";
 const pool = new Pool({
   user: process.env.DB_USER || "postgres",
   host: process.env.DB_HOST || "localhost",
   database: process.env.DB_NAME || "dispatch_db",
   password: process.env.DB_PASSWORD || "password",
   port: process.env.DB_PORT || 5432,
-  ssl: isProduction ? { rejectUnauthorized: false } : false,
+  ssl: dbIsProduction ? { rejectUnauthorized: false } : false,
+  max: 20, // Maximum number of clients in the pool
+  idleTimeoutMillis: 30000, // Close idle clients after 30 seconds
+  connectionTimeoutMillis: 10000, // Return an error after 10 seconds if connection could not be established
+});
+
+// Handle database connection errors
+pool.on("error", (err) => {
+  console.error("Unexpected database error:", err);
 });
 
 // [DEBUG] Test Database Connection Immediately
@@ -49,11 +97,19 @@ pool.connect((err, client, release) => {
   if (err) {
     console.error("❌ FATAL DATABASE ERROR:");
     console.error("   " + err.message);
-    console.error("   Please check your .env file password and database name.");
+    if (isDevelopment) {
+      console.error(
+        "   Please check your .env file password and database name.",
+      );
+    }
     // Keep the process alive slightly longer to read the error, then exit
     setTimeout(() => process.exit(1), 100);
   } else {
     console.log("✅ Database connected successfully!");
+    if (isDevelopment) {
+      console.log(`   Host: ${process.env.DB_HOST || "localhost"}`);
+      console.log(`   Database: ${process.env.DB_NAME || "dispatch_db"}`);
+    }
     release();
   }
 });
@@ -72,9 +128,13 @@ const io = new Server(server, {
 });
 
 io.on("connection", (socket) => {
-  console.log("Socket Client Connected: " + socket.id);
+  if (isDevelopment) {
+    console.log("Socket Client Connected: " + socket.id);
+  }
   socket.on("disconnect", () => {
-    // Optional: Log disconnection
+    if (isDevelopment) {
+      console.log("Socket Client Disconnected: " + socket.id);
+    }
   });
 });
 
@@ -95,9 +155,11 @@ const broadcastUpdate = async (table, orderBy, eventName) => {
 
     const result = await pool.query(query);
     io.emit(eventName, result.rows);
-    console.log(`📢 Broadcasted update for: ${eventName}`);
+    if (isDevelopment) {
+      console.log(`📢 Broadcasted update for: ${eventName}`);
+    }
   } catch (err) {
-    console.error(`Error broadcasting ${table}:`, err);
+    console.error(`Error broadcasting ${table}:`, err.message);
   }
 };
 
@@ -106,6 +168,36 @@ const broadcastUpdate = async (table, orderBy, eventName) => {
 // Root Check
 app.get("/", (req, res) => {
   res.send("Dispatch API is Online");
+});
+
+// Health Check Endpoint (for monitoring services)
+app.get("/health", async (req, res) => {
+  try {
+    // Check database connection
+    await pool.query("SELECT 1");
+    res.status(200).json({
+      status: "healthy",
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime(),
+      environment: NODE_ENV,
+      database: "connected",
+    });
+  } catch (err) {
+    res.status(503).json({
+      status: "unhealthy",
+      timestamp: new Date().toISOString(),
+      error: "Database connection failed",
+    });
+  }
+});
+
+// API Status Endpoint
+app.get("/api/status", (req, res) => {
+  res.json({
+    status: "online",
+    version: "1.0.0",
+    timestamp: new Date().toISOString(),
+  });
 });
 
 // === 1. ABSENCES ===
@@ -493,8 +585,8 @@ app.post("/api/admin-login", async (req, res) => {
       .status(201)
       .json({ success: true, message: "Login logged successfully" });
   } catch (err) {
-    console.error("Error logging admin login:", err);
-    res.status(500).send(err.message);
+    console.error("Error logging admin login:", err.message);
+    res.status(500).json({ error: "Failed to log admin login" });
   }
 });
 
@@ -527,14 +619,44 @@ app.get("/api/admin-login-logs", async (req, res) => {
     const result = await pool.query(query, params);
     res.json(result.rows);
   } catch (err) {
-    console.error("Error fetching admin login logs:", err);
-    res.status(500).send(err.message);
+    console.error("Error fetching admin login logs:", err.message);
+    res.status(500).json({ error: "Failed to fetch login logs" });
   }
 });
 
 // --- START SERVER ---
 server.listen(PORT, () => {
   console.log(`-----------------------------------------------`);
-  console.log(`🚀 DISPATCH SERVER RUNNING ON PORT ${PORT}`);
+  console.log(`🚀 DISPATCH SERVER RUNNING`);
+  console.log(`   Environment: ${NODE_ENV}`);
+  console.log(`   Port: ${PORT}`);
+  console.log(`   Time: ${new Date().toISOString()}`);
   console.log(`-----------------------------------------------`);
 });
+
+// Graceful shutdown handling
+const gracefulShutdown = async (signal) => {
+  console.log(`\n${signal} received. Starting graceful shutdown...`);
+
+  server.close(async () => {
+    console.log("HTTP server closed");
+
+    try {
+      await pool.end();
+      console.log("Database connections closed");
+      process.exit(0);
+    } catch (err) {
+      console.error("Error during shutdown:", err);
+      process.exit(1);
+    }
+  });
+
+  // Force shutdown after 10 seconds
+  setTimeout(() => {
+    console.error("Forced shutdown after timeout");
+    process.exit(1);
+  }, 10000);
+};
+
+process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
+process.on("SIGINT", () => gracefulShutdown("SIGINT"));
