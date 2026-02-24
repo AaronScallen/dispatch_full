@@ -15,6 +15,13 @@ const API = `${BACKEND_URL}/api`;
 const socket = io(BACKEND_URL, {
   withCredentials: true,
   transports: ["polling", "websocket"],
+  reconnection: true,
+  reconnectionDelay: 1000,
+  reconnectionDelayMax: 5000,
+  reconnectionAttempts: 5,
+  timeout: 20000,
+  autoConnect: true,
+  forceNew: false,
 });
 
 // --- TIMEZONE FIX HELPER ---

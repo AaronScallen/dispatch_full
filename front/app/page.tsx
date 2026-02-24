@@ -20,6 +20,13 @@ const BACKEND_URL =
 const socket = io(BACKEND_URL, {
   withCredentials: true,
   transports: ["polling", "websocket"],
+  reconnection: true,
+  reconnectionDelay: 1000,
+  reconnectionDelayMax: 5000,
+  reconnectionAttempts: 5,
+  timeout: 20000,
+  autoConnect: true,
+  forceNew: false,
 });
 
 // --- HELPER TO CHECK DATES ---
@@ -49,6 +56,7 @@ export default function Dashboard() {
   const [onCall, setOnCall] = useState<OnCall[]>([]);
   const [notices, setNotices] = useState<Notice[]>([]);
   const [alerts, setAlerts] = useState<Alert[]>([]);
+  const [errorMessage, setErrorMessage] = useState<string>("");
 
   // Redirect authenticated users to admin page
   useEffect(() => {
@@ -59,12 +67,17 @@ export default function Dashboard() {
 
   useEffect(() => {
     // 1. Handle Connection States
-    socket.on("connect", () => setIsConnected(true));
+    socket.on("connect", () => {
+      setIsConnected(true);
+      setErrorMessage("");
+    });
     socket.on("disconnect", () => setIsConnected(false));
 
     // 2. Fetch Initial Data
     const fetchData = async () => {
       try {
+        console.log(`Attempting to connect to backend at: ${BACKEND_URL}`);
+
         const [absRes, eqRes, callRes, notRes, alertRes] = await Promise.all([
           axios.get(`${BACKEND_URL}/api/absences`),
           axios.get(`${BACKEND_URL}/api/equipment`),
@@ -78,8 +91,31 @@ export default function Dashboard() {
         setOnCall(callRes.data);
         setNotices(notRes.data);
         setAlerts(alertRes.data);
+        setIsConnected(true);
+        setErrorMessage("");
+        console.log("Successfully loaded all data from backend");
       } catch (error) {
-        console.error("Error fetching data", error);
+        console.error("Error fetching data from backend:", error);
+
+        if (axios.isAxiosError(error)) {
+          if (
+            error.code === "ERR_NETWORK" ||
+            error.message.includes("Network Error")
+          ) {
+            const errorMsg = `Cannot connect to backend server at ${BACKEND_URL}. Please ensure the server is running.`;
+            setErrorMessage(errorMsg);
+            console.error(errorMsg);
+          } else if (error.response) {
+            setErrorMessage(
+              `Backend error: ${error.response.status} - ${error.response.statusText}`,
+            );
+          } else {
+            setErrorMessage(`Connection error: ${error.message}`);
+          }
+        } else {
+          setErrorMessage("An unexpected error occurred while fetching data");
+        }
+
         setIsConnected(false);
       }
     };
@@ -111,6 +147,18 @@ export default function Dashboard() {
     <main className="h-screen overflow-hidden bg-slate-950 text-white font-sans selection:bg-blue-500 selection:text-white flex flex-col">
       <ConnectionStatus isConnected={isConnected} />
       <EmergencyBanner alerts={alerts} />
+
+      {/* Error Message Banner */}
+      {errorMessage && (
+        <div className="bg-red-900 border-l-4 border-red-500 text-white px-4 py-3 mx-4 mt-2 rounded">
+          <div className="flex items-center">
+            <div className="py-1">
+              <p className="font-bold">Connection Error</p>
+              <p className="text-sm">{errorMessage}</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Header */}
       <div className="text-center py-[clamp(0.5rem,1vh,2rem)]">

@@ -63,14 +63,42 @@ const corsOptions = {
     }
   },
   credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD"],
+  allowedHeaders: [
+    "Content-Type",
+    "Authorization",
+    "X-Requested-With",
+    "Accept",
+    "Origin",
+    "Access-Control-Request-Method",
+    "Access-Control-Request-Headers",
+  ],
+  exposedHeaders: ["Access-Control-Allow-Origin"],
   preflightContinue: false,
   optionsSuccessStatus: 204,
 };
 
 app.use(cors(corsOptions));
 app.use(bodyParser.json()); // Parse JSON data from forms
+
+// Additional headers for Socket.IO compatibility
+app.use((req, res, next) => {
+  // Set CORS headers explicitly for Socket.IO handshake
+  const origin = req.headers.origin;
+  if (origin && allowedOrigins.includes(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+    res.setHeader("Access-Control-Allow-Credentials", "true");
+    res.setHeader(
+      "Access-Control-Allow-Methods",
+      "GET, POST, PUT, DELETE, OPTIONS, HEAD",
+    );
+    res.setHeader(
+      "Access-Control-Allow-Headers",
+      "Content-Type, Authorization, X-Requested-With, Accept, Origin, Access-Control-Request-Method, Access-Control-Request-Headers",
+    );
+  }
+  next();
+});
 
 // Security headers
 app.use((req, res, next) => {
@@ -140,26 +168,68 @@ const io = new Server(server, {
       if (allowedOrigins.indexOf(origin) !== -1) {
         callback(null, true);
       } else {
+        console.log(`Socket.IO blocked origin: ${origin}`);
         callback(new Error("Not allowed by CORS"));
       }
     },
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD"],
     credentials: true,
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "X-Requested-With",
+      "Accept",
+      "Origin",
+      "Access-Control-Request-Method",
+      "Access-Control-Request-Headers",
+    ],
+    exposedHeaders: ["Access-Control-Allow-Origin"],
   },
   transports: ["polling", "websocket"],
   allowEIO3: true,
   pingTimeout: 60000,
   pingInterval: 25000,
+  // Additional options for production reliability
+  connectTimeout: 45000,
+  upgradeTimeout: 10000,
+  maxHttpBufferSize: 1e6,
+  perMessageDeflate: false,
 });
 
 io.on("connection", (socket) => {
+  const clientOrigin = socket.handshake.headers.origin;
   if (isDevelopment) {
     console.log("Socket Client Connected: " + socket.id);
+    console.log("  Origin:", clientOrigin);
+    console.log("  Transport:", socket.conn.transport.name);
+  } else {
+    console.log(`Socket connected: ${socket.id} from ${clientOrigin}`);
   }
-  socket.on("disconnect", () => {
+
+  socket.on("disconnect", (reason) => {
     if (isDevelopment) {
       console.log("Socket Client Disconnected: " + socket.id);
+      console.log("  Reason:", reason);
     }
+  });
+
+  socket.on("error", (error) => {
+    console.error("Socket error:", error);
+  });
+
+  socket.conn.on("upgrade", () => {
+    if (isDevelopment) {
+      console.log("Transport upgraded to:", socket.conn.transport.name);
+    }
+  });
+});
+
+// Handle Socket.IO errors
+io.engine.on("connection_error", (err) => {
+  console.error("Socket.IO connection error:", {
+    code: err.code,
+    message: err.message,
+    context: err.context,
   });
 });
 
