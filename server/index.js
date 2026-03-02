@@ -69,6 +69,36 @@ function isOriginAllowed(origin) {
   return false;
 }
 
+// CRITICAL: Handle OPTIONS requests FIRST before any other middleware
+// This prevents redirects from interfering with CORS preflight requests
+app.options("*", (req, res) => {
+  const origin = req.headers.origin;
+
+  if (origin && isOriginAllowed(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+    res.setHeader("Access-Control-Allow-Credentials", "true");
+    res.setHeader(
+      "Access-Control-Allow-Methods",
+      "GET, POST, PUT, DELETE, OPTIONS, HEAD",
+    );
+    res.setHeader(
+      "Access-Control-Allow-Headers",
+      "Content-Type, Authorization, X-Requested-With, Accept, Origin, Access-Control-Request-Method, Access-Control-Request-Headers",
+    );
+    res.setHeader("Access-Control-Max-Age", "86400"); // Cache preflight for 24 hours
+
+    if (isDevelopment) {
+      console.log(`✅ Preflight OPTIONS from: ${origin}`);
+    }
+  } else {
+    if (isDevelopment) {
+      console.log(`❌ Blocked preflight OPTIONS from: ${origin}`);
+    }
+  }
+
+  res.status(204).end();
+});
+
 // CORS configuration with function to handle dynamic origins
 const corsOptions = {
   origin: function (origin, callback) {
@@ -78,8 +108,8 @@ const corsOptions = {
     }
 
     if (isOriginAllowed(origin)) {
-      // Return the actual origin instead of just true
-      callback(null, origin);
+      // Return true to allow the origin
+      callback(null, true);
     } else {
       console.log(`CORS blocked origin: ${origin}`);
       callback(new Error("Not allowed by CORS"));
@@ -102,12 +132,11 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-app.use(bodyParser.json()); // Parse JSON data from forms
 
-// Additional headers for Socket.IO compatibility
+// Set CORS headers on all requests as backup
 app.use((req, res, next) => {
-  // Set CORS headers explicitly for Socket.IO handshake
   const origin = req.headers.origin;
+
   if (origin && isOriginAllowed(origin)) {
     res.setHeader("Access-Control-Allow-Origin", origin);
     res.setHeader("Access-Control-Allow-Credentials", "true");
@@ -120,8 +149,11 @@ app.use((req, res, next) => {
       "Content-Type, Authorization, X-Requested-With, Accept, Origin, Access-Control-Request-Method, Access-Control-Request-Headers",
     );
   }
+
   next();
 });
+
+app.use(bodyParser.json()); // Parse JSON data from forms
 
 // Security headers
 app.use((req, res, next) => {
@@ -193,8 +225,8 @@ const io = new Server(server, {
       }
 
       if (isOriginAllowed(origin)) {
-        // Return the actual origin, not just true
-        callback(null, origin);
+        // Return true to allow the origin
+        callback(null, true);
       } else {
         console.log(`Socket.IO blocked origin: ${origin}`);
         callback(new Error("Not allowed by CORS"));
