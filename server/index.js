@@ -72,8 +72,14 @@ function isOriginAllowed(origin) {
 // CORS configuration with function to handle dynamic origins
 const corsOptions = {
   origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) {
+      return callback(null, true);
+    }
+
     if (isOriginAllowed(origin)) {
-      callback(null, true);
+      // Return the actual origin instead of just true
+      callback(null, origin);
     } else {
       console.log(`CORS blocked origin: ${origin}`);
       callback(new Error("Not allowed by CORS"));
@@ -97,6 +103,9 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 app.use(bodyParser.json()); // Parse JSON data from forms
+
+// Handle preflight requests explicitly
+app.options("*", cors(corsOptions));
 
 // Additional headers for Socket.IO compatibility
 app.use((req, res, next) => {
@@ -181,8 +190,14 @@ pool.connect((err, client, release) => {
 const io = new Server(server, {
   cors: {
     origin: function (origin, callback) {
+      // Allow requests with no origin (mobile apps, curl, etc)
+      if (!origin) {
+        return callback(null, true);
+      }
+
       if (isOriginAllowed(origin)) {
-        callback(null, true);
+        // Return the actual origin, not just true
+        callback(null, origin);
       } else {
         console.log(`Socket.IO blocked origin: ${origin}`);
         callback(new Error("Not allowed by CORS"));
