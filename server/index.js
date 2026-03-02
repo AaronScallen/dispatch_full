@@ -71,7 +71,8 @@ function isOriginAllowed(origin) {
 
 // CRITICAL: Handle OPTIONS requests FIRST before any other middleware
 // This prevents redirects from interfering with CORS preflight requests
-app.options("*", (req, res) => {
+// Note: Express 5 requires "/*" instead of "*" for wildcard matching
+app.options("/*", (req, res) => {
   const origin = req.headers.origin;
 
   if (origin && isOriginAllowed(origin)) {
