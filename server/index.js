@@ -104,9 +104,6 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(bodyParser.json()); // Parse JSON data from forms
 
-// Handle preflight requests explicitly
-app.options("*", cors(corsOptions));
-
 // Additional headers for Socket.IO compatibility
 app.use((req, res, next) => {
   // Set CORS headers explicitly for Socket.IO handshake
